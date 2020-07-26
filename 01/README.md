@@ -9,7 +9,7 @@
 - [ ] Mux16
 - [x] [Not](https://github.com/ackintosh/nand2tetris/blob/master/01/Not.hdl)
 - [ ] Not16
-- [ ] Or
+- [x] [Or](https://github.com/ackintosh/nand2tetris/blob/master/01/Or.hdl)
 - [ ] Or8Way
 - [ ] Or16
 - [ ] Xor
