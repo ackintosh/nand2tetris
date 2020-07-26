@@ -1,4 +1,4 @@
-- [ ] And
+- [x] [And](https://github.com/ackintosh/nand2tetris/blob/master/01/And.hdl)
 - [ ] And16
 - [ ] DMux
 - [ ] DMux4Way
