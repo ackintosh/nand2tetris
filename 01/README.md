@@ -3,7 +3,7 @@
 - [ ] DMux
 - [ ] DMux4Way
 - [ ] DMux8Way
-- [ ] Mux
+- [x] [Mux](https://github.com/ackintosh/nand2tetris/blob/master/01/Mux.hdl)
 - [ ] Mux4Way16
 - [ ] Mux8Way16
 - [ ] Mux16
