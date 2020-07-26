@@ -12,4 +12,4 @@
 - [x] [Or](https://github.com/ackintosh/nand2tetris/blob/master/01/Or.hdl)
 - [ ] Or8Way
 - [ ] Or16
-- [ ] Xor
+- [x] [Xor](https://github.com/ackintosh/nand2tetris/blob/master/01/Xor.hdl)
