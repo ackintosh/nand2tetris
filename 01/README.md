@@ -1,6 +1,6 @@
 - [x] [And](https://github.com/ackintosh/nand2tetris/blob/master/01/And.hdl)
 - [ ] And16
-- [ ] DMux
+- [x] [DMux](https://github.com/ackintosh/nand2tetris/blob/master/01/DMux.hdl)
 - [ ] DMux4Way
 - [ ] DMux8Way
 - [x] [Mux](https://github.com/ackintosh/nand2tetris/blob/master/01/Mux.hdl)
