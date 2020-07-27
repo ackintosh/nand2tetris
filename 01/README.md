@@ -6,7 +6,7 @@
 - [x] [Mux](https://github.com/ackintosh/nand2tetris/blob/master/01/Mux.hdl)
 - [ ] Mux4Way16
 - [ ] Mux8Way16
-- [ ] Mux16
+- [x] [Mux16](https://github.com/ackintosh/nand2tetris/blob/master/01/Mux16.hdl)
 - [x] [Not](https://github.com/ackintosh/nand2tetris/blob/master/01/Not.hdl)
 - [x] [Not16](https://github.com/ackintosh/nand2tetris/blob/master/01/Not16.hdl)
 - [x] [Or](https://github.com/ackintosh/nand2tetris/blob/master/01/Or.hdl)
