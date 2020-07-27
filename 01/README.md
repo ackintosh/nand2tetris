@@ -4,7 +4,7 @@
 - [ ] DMux4Way
 - [ ] DMux8Way
 - [x] [Mux](https://github.com/ackintosh/nand2tetris/blob/master/01/Mux.hdl)
-- [ ] Mux4Way16
+- [x] [Mux4Way16](https://github.com/ackintosh/nand2tetris/blob/master/01/Mux4Way16.hdl)
 - [ ] Mux8Way16
 - [x] [Mux16](https://github.com/ackintosh/nand2tetris/blob/master/01/Mux16.hdl)
 - [x] [Not](https://github.com/ackintosh/nand2tetris/blob/master/01/Not.hdl)
