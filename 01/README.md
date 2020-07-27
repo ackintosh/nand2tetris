@@ -8,7 +8,7 @@
 - [ ] Mux8Way16
 - [ ] Mux16
 - [x] [Not](https://github.com/ackintosh/nand2tetris/blob/master/01/Not.hdl)
-- [ ] Not16
+- [x] [Not16](https://github.com/ackintosh/nand2tetris/blob/master/01/Not16.hdl)
 - [x] [Or](https://github.com/ackintosh/nand2tetris/blob/master/01/Or.hdl)
 - [ ] Or8Way
 - [ ] Or16
