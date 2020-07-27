@@ -11,5 +11,5 @@
 - [x] [Not16](https://github.com/ackintosh/nand2tetris/blob/master/01/Not16.hdl)
 - [x] [Or](https://github.com/ackintosh/nand2tetris/blob/master/01/Or.hdl)
 - [ ] Or8Way
-- [ ] Or16
+- [x] [Or16](https://github.com/ackintosh/nand2tetris/blob/master/01/Or16.hdl)
 - [x] [Xor](https://github.com/ackintosh/nand2tetris/blob/master/01/Xor.hdl)
