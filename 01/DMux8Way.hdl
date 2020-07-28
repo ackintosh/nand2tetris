@@ -11,10 +11,30 @@
  *                            {0, 0, 0, 0, 0, 0, 0, in} if sel == 111
  */
 
+ /**
+  * sel[2], sel[1], sel[0] : out
+  * 0, 0, 0 : a
+  * 0, 0, 1 : b
+  * 0, 1, 0 : c
+  * 0, 1, 1 : d
+  * 1, 0, 0 : e
+  * 1, 0, 1 : f
+  * 1, 1, 0 : g
+  * 1, 1, 1 : h
+  */
 CHIP DMux8Way {
     IN in, sel[3];
     OUT a, b, c, d, e, f, g, h;
 
     PARTS:
-    // Put your code here:
+    DMux4Way(in=in, sel=sel[0..1], a=tmpA, b=tmpB, c=tmpC, d=tmpD);
+    DMux4Way(in=in, sel=sel[0..1], a=tmpE, b=tmpF, c=tmpG, d=tmpH);
+
+    /** 下位2ビットが同じもの同士を使って判定を行う */
+    // そもそも下位ビットが該当していなければ、出力(`a=a` と `b=e`)はどちらも 0 になる
+    DMux(in=tmpA, sel=sel[2], a=a, b=e);
+
+    DMux(in=tmpB, sel=sel[2], a=b, b=f);
+    DMux(in=tmpC, sel=sel[2], a=c, b=g);
+    DMux(in=tmpD, sel=sel[2], a=d, b=h);
 }
