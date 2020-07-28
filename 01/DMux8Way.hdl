@@ -30,8 +30,8 @@ CHIP DMux8Way {
     DMux4Way(in=in, sel=sel[0..1], a=tmpA, b=tmpB, c=tmpC, d=tmpD);
     DMux4Way(in=in, sel=sel[0..1], a=tmpE, b=tmpF, c=tmpG, d=tmpH);
 
-    /** $B2<0L(B2$B%S%C%H$,F1$8$b$NF1;N$r;H$C$FH=Dj$r9T$&(B */
-    // $B$=$b$=$b2<0L%S%C%H$,3:Ev$7$F$$$J$1$l$P!"=PNO(B(`a=a` $B$H(B `b=e`)$B$O$I$A$i$b(B 0 $B$K$J$k(B
+    /** 下位2ビットが同じもの同士を使って判定を行う */
+    // そもそも下位ビットが該当していなければ、出力(`a=a` と `b=e`)はどちらも 0 になる
     DMux(in=tmpA, sel=sel[2], a=a, b=e);
 
     DMux(in=tmpB, sel=sel[2], a=b, b=f);
