@@ -11,6 +11,17 @@
  *       h if sel == 111
  */
 
+ /**
+  * sel[2], sel[1], sel[0] : out
+  * 0, 0, 0 : a
+  * 0, 0, 1 : b
+  * 0, 1, 0 : c
+  * 0, 1, 1 : d
+  * 1, 0, 0 : e
+  * 1, 0, 1 : f
+  * 1, 1, 0 : g
+  * 1, 1, 1 : h
+  */
 CHIP Mux8Way16 {
     IN a[16], b[16], c[16], d[16],
        e[16], f[16], g[16], h[16],
@@ -18,5 +29,7 @@ CHIP Mux8Way16 {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    Mux4Way16(a=a, b=b, c=c, d=d, sel=sel[0..1], out=ad);
+    Mux4Way16(a=e, b=f, c=g, d=h, sel=sel[0..1], out=eh);
+    Mux16(a=ad, b=eh, sel=sel[2], out=out);
 }
