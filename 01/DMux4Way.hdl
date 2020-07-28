@@ -16,5 +16,14 @@ CHIP DMux4Way {
     OUT a, b, c, d;
 
     PARTS:
-    // Put your code here:
+    /** 下位ビットでの判定を行う*/
+    DMux(in=in, sel=sel[0], a=tmpA, b=tmpB);
+    DMux(in=in, sel=sel[0], a=tmpC, b=tmpD);
+
+    /** 上位ビットの判定を行う */
+    // そもそも下位ビットが該当していなければ、出力(`a=a` と `b=d`)はどちらも 0 になる
+    DMux(in=tmpA, sel=sel[1], a=a, b=c);
+
+    // そもそも下位ビットが該当していなければ、出力(`a=b` と `b=d`)はどちらも 0 になる
+    DMux(in=tmpB, sel=sel[1], a=b, b=d);
 }
