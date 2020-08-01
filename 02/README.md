@@ -1,5 +1,5 @@
 - [ ] FullAdder(全加算器)
-- [ ] HalfAdder(半加算器)
+- [x] [HalfAdder(半加算器)](https://github.com/ackintosh/nand2tetris/blob/master/02/HalfAdder.hdl)
 - [ ] ALU(算術論理演算器)
 - [ ] Inc16(インクリメンタ)
 - [ ] Add16(加算器)
