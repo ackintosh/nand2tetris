@@ -2,8 +2,8 @@
 
 [コンピュータシステムの理論と実装](https://www.oreilly.co.jp/books/9784873117126/)
 
-- [ ] 1. [ブール論理 (Boolean Logic)](https://github.com/ackintosh/nand2tetris/tree/master/01)
-- [ ] 2. [ブール算術 (Boolean Arithmetic)](https://github.com/ackintosh/nand2tetris/tree/master/02)
+- [x] 1. [ブール論理 (Boolean Logic)](https://github.com/ackintosh/nand2tetris/tree/master/01)
+- [x] 2. [ブール算術 (Boolean Arithmetic)](https://github.com/ackintosh/nand2tetris/tree/master/02)
 - [ ] 3. 順序回路 (Sequential Logic)
 - [ ] 4. 機械語 (Machine Language)
 - [ ] 5. コンピュータアーキテクチャ (Computer Architecture)
