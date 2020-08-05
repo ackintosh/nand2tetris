@@ -14,3 +14,10 @@
 - [ ] 10. コンパイラ#1 : 構文解析 (Compiler Ⅰ: Syntax Analysis)
 - [ ] 11. コンパイラ#2 : コード生成 (Compiler Ⅱ: Code Generation)
 - [ ] 12. オペレーティングシステム (Operating System)
+
+
+[Hardware Simulator Tutorial](https://www.nand2tetris.org/software)
+
+- [x] Part V: [GUI-Empowered ships](https://github.com/ackintosh/nand2tetris/tree/master/demo)
+  - チュートリアルそのままだとエラーになってしまうので修正（hdlファイルのコメントに記載）
+
