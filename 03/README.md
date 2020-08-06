@@ -1,5 +1,5 @@
 - [x] [Bit(1ビットレジスタ)](https://github.com/ackintosh/nand2tetris/blob/master/03/a/Bit.hdl)
-- [ ] Register(レジスタ)
+- [x] [Register(レジスタ)](https://github.com/ackintosh/nand2tetris/blob/master/03/a/Register.hdl)
 - [ ] RAM8(8レジスタメモリ)
 - [ ] PC(16ビットカウンタ)
 - [ ] RAM512
