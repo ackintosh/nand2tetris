@@ -3,6 +3,6 @@
 - [x] [RAM8(8レジスタメモリ)](https://github.com/ackintosh/nand2tetris/blob/master/03/a/RAM8.hdl)
 - [x] [RAM64(nレジスタメモリ)](https://github.com/ackintosh/nand2tetris/blob/master/03/a/RAM64.hdl)
 - [x] [PC(16ビットカウンタ)](https://github.com/ackintosh/nand2tetris/blob/master/03/a/PC.hdl)
-- [ ] RAM512
+- [x] [RAM512](https://github.com/ackintosh/nand2tetris/blob/master/03/b/RAM512.hdl)
 - [ ] RAM4K
 - [ ] RAM16K
