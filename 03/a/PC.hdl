@@ -16,5 +16,19 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    // resetを反映した出力を計算する
+    ALU(x=in, y=false, zx=reset, nx=false, zy=false, ny=false, f=true, no=false, out=aluOut, zr=zr, ng=ng);
+    // レジスタのフィードバックをインクリメントする
+    Inc16(in=feedback, out=incOut);
+
+    // 計算した2つの出力のどちらを使うかの判断を行う
+    Mux16(a=aluOut, b=incOut, sel=inc, out=muxout1);
+    Mux16(a=muxout1, b=aluOut, sel=load, out=muxout2);
+    Mux16(a=muxout2, b=aluOut, sel=reset, out=muxout3);
+
+    // 計算した出力をレジスタに読み込むかどうかの判断を行う
+    Or(a=load, b=inc, out=shouldLoad1);
+    Or(a=shouldLoad1, b=reset, out=shouldLoad2);
+
+    Register(in=muxout3, load=shouldLoad2, out=out, out=feedback);
 }
