@@ -4,5 +4,5 @@
 - [x] [RAM64(nレジスタメモリ)](https://github.com/ackintosh/nand2tetris/blob/master/03/a/RAM64.hdl)
 - [x] [PC(16ビットカウンタ)](https://github.com/ackintosh/nand2tetris/blob/master/03/a/PC.hdl)
 - [x] [RAM512](https://github.com/ackintosh/nand2tetris/blob/master/03/b/RAM512.hdl)
-- [ ] RAM4K
+- [x] [RAM4K](https://github.com/ackintosh/nand2tetris/blob/master/03/b/RAM4K.hdl)
 - [ ] RAM16K
