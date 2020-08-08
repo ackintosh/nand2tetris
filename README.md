@@ -18,6 +18,6 @@
 
 [Hardware Simulator Tutorial](https://www.nand2tetris.org/software)
 
-- [x] Part V: [GUI-Empowered ships](https://github.com/ackintosh/nand2tetris/tree/master/demo)
+- [x] Part V: [GUI-Empowered ships](https://github.com/ackintosh/nand2tetris/tree/master/hardware_simulator_tutorial)
   - チュートリアルそのままだとエラーになってしまうので修正（hdlファイルのコメントに記載）
 
