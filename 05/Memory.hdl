@@ -27,5 +27,18 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    // 2bitの値から、メモリ/スクリーン/キーボードのどれ宛のIOなのか判定する
+    DMux4Way(in=load, sel=address[13..14], a=loadForRAM1, b=loadForRAM2, c=loadForScreen, d=loadForKeyboard);
+    // メモリは 00 と 01 の2パターンあるので Or 演算する
+    Or(a=loadForRAM1, b=loadForRAM2, out=loadForRAM);
+
+    // メモリ
+    RAM16K(in=in, load=loadForRAM, address=address[0..13], out=outFromRAM);
+    // スクリーン
+    Screen(in=in, load=loadForScreen, address=address[0..12], out=outFromScreen);
+    // キーボード
+    Keyboard(out=outFromKeyboard);
+
+    // それぞれの出力をマルチプレクサでひとつにまとめる
+    Mux4Way16(a=outFromRAM, b=outFromRAM, c=outFromScreen, d=outFromKeyboard, sel=address[13..14], out=out);
 }
