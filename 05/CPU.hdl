@@ -38,6 +38,88 @@ CHIP CPU {
         addressM[15],    // Address in data memory (of M)
         pc[15];          // address of next instruction
 
+    /** 
+    16ビットの命令
+    「i xx a cccccc ddd jjj」
+    i: 命令の種類(A命令、C命令)
+     -> A命令の場合、以降のビットはすべてデータ(定数値)を表す
+     -> C命令の場合、ビットによって意味が異なる
+    x: 未使用
+    a: ALUが計算する値を決定するビット(Aレジスタの値か、メモリ入力Memory[A]か)
+    c: ALUが実行する関数を決定するビット(図2-6、図4-3を参照)
+    d: ALUの結果を格納する場所を決定するビット(図4-4を参照)
+    j: 次に行う命令を決定するビット(図4-5を参照)
+    **/
+
     PARTS:
-    // Put your code here:
+    /** Aレジスタ **/
+    Mux16(a=instruction, b=aluOutForARegister, sel=instruction[15], out=muxForA);
+    Not(in=instruction[15], out=isAOperation);
+    Or(a=isAOperation, b=instruction[5], out=loadForARegister);
+    ARegister(
+        in=muxForA,
+	load=loadForARegister, // A命令または、d1ビット(instruction[5])が立っていればAレジスタに書き込む
+	out=outFromARegister,
+	out[0..14]=addressM, // データメモリのアドレス(addressM)
+	out=addressForPc // プログラムカウンタ(PC)
+    ); 
+
+    /** Dレジスタ **/
+    // d2ビット(instruction[4])が立っていればDレジスタに格納する
+    And(
+        a=instruction[15], // C命令であること
+	b=instruction[4], // d2ビットが立っていること
+	out=loadForDRegister
+    );
+    DRegister(in=aluOutForDRegister, load=loadForDRegister, out=xForALU);
+
+    Mux16(a=outFromARegister, b=inM, sel=instruction[12], out=yForALU);
+
+    /** ALU **/
+    ALU(
+        x=xForALU,
+        y=yForALU,
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        out=outM,
+        out=aluOutForDRegister,
+        out=aluOutForARegister,
+        zr=zero,
+        zr=zero2,
+        ng=negative,
+        ng=negative2
+    );
+
+    // d3ビット(instruction[3])が立っていればMemory[A]に格納する (= writeM)
+    And(
+        a=instruction[15], // C命令であること
+	b=instruction[3], // d3ビットが立っていること
+	out=writeM
+    );
+
+    /** PC **/
+    // j1ビット(instruction[2])が立っている & ALUの計算結果が負の整数ならばJUMP
+    And(a=instruction[2], b=negative, out=loadJ1);
+    // j2ビット(instruction[1])が立っている & ALUの計算結果が0ならばJUMP
+    And(a=instruction[1], b=zero, out=loadJ2);
+    // j3ビット(instruction[0])が立っている & ALUの計算結果が正の整数ならばJUMP
+    Or(a=zero2, b=negative2, out=t1);
+    Not(in=t1, out=positive);
+    And(a=instruction[0], b=positive, out=loadJ3);
+
+    // j1~3すべて立っていればJUMP
+    And(a=instruction[2], b=instruction[1], out=j12);
+    And(a=j12, b=instruction[0], out=j123);
+
+    Or(a=loadJ1, b=loadJ2, out=loadJ1J2);
+    Or(a=loadJ1J2, b=loadJ3, out=loadJ1J2J3);
+    Or(a=loadJ1J2J3, b=j123, out=loadJ);
+    And(a=instruction[15], b=loadJ, out=loadForPC);
+    Not(in=loadForPC, out=inc);
+
+    PC(in=addressForPc, load=loadForPC, inc=inc, reset=reset, out[0..14]=pc);
 }
