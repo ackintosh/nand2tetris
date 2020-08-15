@@ -6,7 +6,7 @@
 - [x] 2. [ブール算術 (Boolean Arithmetic)](https://github.com/ackintosh/nand2tetris/tree/master/02)
 - [x] 3. [順序回路 (Sequential Logic)](https://github.com/ackintosh/nand2tetris/tree/master/03)
 - [x] 4. [機械語 (Machine Language)](https://github.com/ackintosh/nand2tetris/tree/master/04)
-- [ ] 5. [コンピュータアーキテクチャ (Computer Architecture)](https://github.com/ackintosh/nand2tetris/tree/master/05)
+- [x] 5. [コンピュータアーキテクチャ (Computer Architecture)](https://github.com/ackintosh/nand2tetris/tree/master/05)
 - [ ] 6. アセンブラ (Assembler)
 - [ ] 7. バーチャルマシン#1 : スタック操作 (Virtual Machine Ⅰ: Stack Arithmetic)
 - [ ] 8. バーチャルマシン#2 : プログラム制御 (Virtual Machine Ⅱ: Program Control)
