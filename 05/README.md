@@ -1,3 +1,3 @@
 - [x] [Memory](https://github.com/ackintosh/nand2tetris/blob/master/05/Memory.hdl)
 - [x] [CPU](https://github.com/ackintosh/nand2tetris/blob/master/05/CPU.hdl)
-- [ ] Computer
+- [x] [Computer](https://github.com/ackintosh/nand2tetris/blob/master/05/Computer.hdl)
