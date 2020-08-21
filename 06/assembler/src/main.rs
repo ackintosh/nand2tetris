@@ -19,5 +19,7 @@ fn main() {
         std::fs::File::open(path).expect("file not found")
     );
 
-    println!("{:?}", parser.has_more_commands());
+    println!("{:?}", parser.advance());
+    println!("{:?}", parser.advance());
+    println!("{:?}", parser.advance());
 }
