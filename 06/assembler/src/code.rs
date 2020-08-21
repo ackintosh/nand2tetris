@@ -24,6 +24,12 @@ pub fn code(command: Command) -> [bool; 16] {
 
             bitarray
         }
+        // C命令
+        // 111a cccc ccdd djjj
+        Command::CCommand(mnemonics) => {
+            println!("mnemonics: {:?}", mnemonics);
+            todo!()
+        }
         _ => todo!()
     }
 }
