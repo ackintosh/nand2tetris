@@ -34,6 +34,7 @@ impl Parser {
 
         loop {
             if let Ok(len) = self.reader.read_line(&mut buf) {
+                // EOF
                 if len == 0 {
                     return None;
                 }
