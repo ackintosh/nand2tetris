@@ -22,7 +22,7 @@ impl Parser {
     }
 
     // 表6-1にはあるけど未実装
-    // has_more_commmands
+    // has_more_commands
     // command_type
     // symbol
     // dest
