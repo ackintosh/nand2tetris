@@ -3,6 +3,7 @@ use std::io::{BufReader, BufRead};
 use crate::parser::Command::{ACommand, LCommand, CCommand};
 
 // 6.3.1 Parserモジュール
+// 主な機能は各アセンブリコマンドをその基本要素に分解すること
 pub struct Parser {
     reader: BufReader<File>,
 }

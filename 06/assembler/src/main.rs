@@ -1,6 +1,7 @@
 use std::ffi::OsStr;
 use crate::parser::Parser;
 
+mod code;
 mod parser;
 
 fn main() {
@@ -19,7 +20,13 @@ fn main() {
         std::fs::File::open(path).expect("file not found")
     );
 
-    println!("{:?}", parser.advance());
-    println!("{:?}", parser.advance());
-    println!("{:?}", parser.advance());
+    loop {
+        if let Some(command) = parser.advance() {
+            println!("command: {:?}", command);
+            let bits = code::code(command);
+            println!("bits: {:?}", bits);
+        } else {
+            break;
+        }
+    }
 }
