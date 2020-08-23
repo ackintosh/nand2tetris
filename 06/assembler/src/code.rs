@@ -9,20 +9,20 @@ pub fn code(command: Command) -> [bool; 16] {
         // 0vvvv vvvv vvvv vvvv
         Command::ACommand(s) => {
             // A命令のvalue部分を、2進数の文字列に変換
-            let bits_string = format!("{:b}", s.parse::<u16>().unwrap());
+            let bit_string = format!("{:b}", s.parse::<u16>().unwrap());
 
-            let mut bitarray = [false; 16];
+            let mut bit_array = [false; 16];
             let mut count = 15;
-            for b in bits_string.chars().rev() {
+            for b in bit_string.chars().rev() {
                 if b == '1' {
-                    bitarray[count] = true
+                    bit_array[count] = true
                 } else {
-                    bitarray[count] = false
+                    bit_array[count] = false
                 }
                 count -= 1;
             }
 
-            bitarray
+            bit_array
         }
         // C命令
         // 111a cccc ccdd djjj
