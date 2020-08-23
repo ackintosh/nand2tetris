@@ -46,6 +46,6 @@ fn main() {
             .collect::<Vec<&str>>()
             .join("");
         code.push_str("\n");
-        writer.write_all(code.as_bytes());
+        writer.write_all(code.as_bytes()).expect("failed to write the binary code");
     }
 }
