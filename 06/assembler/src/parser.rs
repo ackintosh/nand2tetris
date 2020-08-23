@@ -20,36 +20,9 @@ pub enum Command {
 
 impl Parser {
     pub fn new(file: File) -> Self {
-        let mut symbol_table = SymbolTable::new();
-
-        // 定義済みシンボル
-        symbol_table.add("SP", 0);
-        symbol_table.add("LCL", 1);
-        symbol_table.add("ARG", 2);
-        symbol_table.add("THIS", 3);
-        symbol_table.add("THAT", 4);
-        symbol_table.add("R0", 0);
-        symbol_table.add("R1", 1);
-        symbol_table.add("R2", 2);
-        symbol_table.add("R3", 3);
-        symbol_table.add("R4", 4);
-        symbol_table.add("R5", 5);
-        symbol_table.add("R6", 6);
-        symbol_table.add("R7", 7);
-        symbol_table.add("R8", 8);
-        symbol_table.add("R9", 9);
-        symbol_table.add("R10", 10);
-        symbol_table.add("R11", 11);
-        symbol_table.add("R12", 12);
-        symbol_table.add("R13", 13);
-        symbol_table.add("R14", 14);
-        symbol_table.add("R15", 15);
-        symbol_table.add("SCREEN", 16384);
-        symbol_table.add("KBD", 24576);
-
         Self {
             reader: BufReader::new(file),
-            symbol_table,
+            symbol_table: SymbolTable::new(),
             next_rom_address: 0,
         }
     }
