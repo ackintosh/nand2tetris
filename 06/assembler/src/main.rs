@@ -24,6 +24,8 @@ fn main() {
         std::fs::File::open(path).expect("file not found")
     );
 
+    parser.scan_labels();
+
     let mut binary_code: Vec<[bool; 16]> = vec![];
 
     loop {
