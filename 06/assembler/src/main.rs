@@ -6,6 +6,7 @@ use std::fs::File;
 
 mod code;
 mod parser;
+mod symbol_table;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
