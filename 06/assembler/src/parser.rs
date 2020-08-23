@@ -11,7 +11,7 @@ pub struct Parser {
 #[derive(Debug)]
 pub enum Command {
     ACommand(String),
-    CCommand((String, String, String)), // comp, dest, jump
+    CCommand((String, String, String)), // dest, comp, jump
     LCommand,
 }
 
@@ -88,7 +88,7 @@ impl Parser {
 
     fn parse_c_command(s: String) -> (String, String, String) {
         let fragments: Vec<&str> = s.split('=').collect();
-        let (comp, s): (String, &str) = match fragments.len() {
+        let (dest, s): (String, &str) = match fragments.len() {
             2 => {
                 (
                     String::from(*fragments.first().expect("")),
@@ -97,7 +97,7 @@ impl Parser {
             }
             1 => {
                 (
-                    "".to_owned(),
+                    "null".to_owned(),
                     fragments.first().unwrap()
                 )
             }
@@ -105,7 +105,7 @@ impl Parser {
         };
 
         let fragments: Vec<&str> = s.split(';').collect();
-        let (dest, jump): (String, String) = match fragments.len() {
+        let (comp, jump): (String, String) = match fragments.len() {
             2 => {
                 (
                     String::from(*fragments.first().expect("")),
@@ -115,12 +115,14 @@ impl Parser {
             1 => {
                 (
                     String::from(*fragments.first().unwrap()),
-                    "".to_owned()
+                    "null".to_owned()
                 )
             }
             _ => panic!()
         };
 
-        (comp, dest, jump)
+        assert_ne!(dest.len() + comp.len() + jump.len() , 0);
+
+        (dest, comp, jump)
     }
 }
