@@ -1,5 +1,8 @@
 use std::ffi::OsStr;
 use crate::parser::Parser;
+use std::path::PathBuf;
+use std::io::{BufWriter, Write};
+use std::fs::File;
 
 mod code;
 mod parser;
@@ -20,13 +23,29 @@ fn main() {
         std::fs::File::open(path).expect("file not found")
     );
 
+    let mut binary_code: Vec<[bool; 16]> = vec![];
+
     loop {
         if let Some(command) = parser.advance() {
             println!("command: {:?}", command);
             let bits = code::code(command);
             println!("bits: {:?}", bits);
+            binary_code.push(bits);
         } else {
             break;
         }
+    }
+
+    let mut output_path = PathBuf::from(path);
+    output_path.set_extension("hack");
+
+    let mut writer = BufWriter::new(File::create(output_path).expect("failed to create hack file"));
+    for line in binary_code.iter() {
+        let mut code: String = line.iter()
+            .map(|b| if *b { "1" } else { "0" })
+            .collect::<Vec<&str>>()
+            .join("");
+        code.push_str("\n");
+        writer.write_all(code.as_bytes());
     }
 }
