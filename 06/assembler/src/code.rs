@@ -51,6 +51,11 @@ pub fn code(command: Command) -> [bool; 16] {
 // P.119
 fn a_comp(comp: &str) -> [bool; 7] {
     match comp {
+        // a = 0
+        "0" => [
+            false,
+            true, false, true, false, true, false
+        ],
         "A" => [
             false,
             true, true, false, false, false, false
@@ -62,6 +67,15 @@ fn a_comp(comp: &str) -> [bool; 7] {
         "D+A" => [
             false,
             false, false, false, false, true, false
+        ],
+        // a = 1
+        "M" => [
+            true,
+            true, true, false, false, false, false
+        ],
+        "D-M" => [
+            true,
+            false, true, false, false, true, true
         ],
         _ => todo!("comp: {}", comp)
     }
@@ -83,6 +97,12 @@ fn dest(dest: &str) -> [bool; 3] {
 fn jump(jump: &str) -> [bool; 3] {
     match jump {
         "null" => [false, false, false],
+        "JGT" => [false, false, true],
+        "JEQ" => [false, true, false],
+        "JGE" => [false, true, true],
+        "JLT" => [true, false, false],
+        "JNE" => [true, false, true],
+        "JMP" => [true, true, true],
         _ => todo!("jump: {}", jump)
     }
 }
