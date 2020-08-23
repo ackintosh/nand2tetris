@@ -56,26 +56,114 @@ fn a_comp(comp: &str) -> [bool; 7] {
             false,
             true, false, true, false, true, false
         ],
-        "A" => [
+        "1" => [
             false,
-            true, true, false, false, false, false
+            true, true, true, true, true, true
+        ],
+        "-1" => [
+            false,
+            true, true, true, false, true, false
         ],
         "D" => [
             false,
             false, false, true, true, false, false
         ],
+        "A" => [
+            false,
+            true, true, false, false, false, false
+        ],
+        "!D" => [
+            false,
+            false, false, true, true, false, true
+        ],
+        "!A" => [
+            false,
+            true, true, false, false, false, true
+        ],
+        "-D" => [
+            false,
+            false, false, true, true, true, true
+        ],
+        "-A" => [
+            false,
+            true, true, false, false, true, true
+        ],
+        "D+1" => [
+            false,
+            false, true, true, true, true, true
+        ],
+        "A+1" => [
+            false,
+            true, true, false, true, true, true
+        ],
+        "D-1" => [
+            false,
+            false, false, true, true, true, false
+        ],
+        "A-1" => [
+            false,
+            true, true, false, false, true, false
+        ],
         "D+A" => [
             false,
             false, false, false, false, true, false
+        ],
+        "D-A" => [
+            false,
+            false, true, false, false, true, true
+        ],
+        "A-D" => [
+            false,
+            false, false, false, true, true, true
+        ],
+        "D&A" => [
+            false,
+            false, false, false, false, false, false
+        ],
+        "D|A" => [
+            false,
+            false, true, false, true, false, true
         ],
         // a = 1
         "M" => [
             true,
             true, true, false, false, false, false
         ],
+        "!M" => [
+            true,
+            true, true, false, false, false, true
+        ],
+        "-M" => [
+            true,
+            true, true, false, false, true, true
+        ],
+        "M+1" => [
+            true,
+            true, true, false, true, true, true
+        ],
+        "M-1" => [
+            true,
+            true, true, false, false, true, false
+        ],
+        "D+M" => [
+            true,
+            false, false, false, false, true, false
+        ],
         "D-M" => [
             true,
             false, true, false, false, true, true
+        ],
+        "M-D" => [
+            true,
+            false, false, false, true, true, true
+        ],
+        "D&M" => [
+            true,
+            false, false, false, false, false, false
+        ],
+        "D|M" => [
+            true,
+            false, true, false, true, false, true
         ],
         _ => todo!("comp: {}", comp)
     }
@@ -88,6 +176,11 @@ fn dest(dest: &str) -> [bool; 3] {
         "null" => [false, false, false],
         "M" => [false, false, true],
         "D" => [false, true, false],
+        "MD" => [false, true, true],
+        "A" => [true, false, false],
+        "AM" => [true, false, true],
+        "AD" => [true, true, false],
+        "AMD" => [true, true, true],
         _ => todo!("dest: {}", dest)
     }
 }
@@ -102,6 +195,7 @@ fn jump(jump: &str) -> [bool; 3] {
         "JGE" => [false, true, true],
         "JLT" => [true, false, false],
         "JNE" => [true, false, true],
+        "JLE" => [true, true, false],
         "JMP" => [true, true, true],
         _ => todo!("jump: {}", jump)
     }
