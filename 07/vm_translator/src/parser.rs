@@ -17,6 +17,7 @@ pub enum Operator {
     Add,
     Sub,
     Neg,
+    Eq,
 }
 
 impl Operator {

@@ -2,11 +2,6 @@ use crate::parser::Command;
 use crate::parser::MemorySegment;
 use crate::parser::Operator;
 
-// 表7-2 CodeWriterモジュール
-pub struct CodeWriter {
-    sp: StackPointer,
-}
-
 struct StackPointer {
     address: u16,
 }
@@ -42,10 +37,35 @@ impl StackPointer {
     }
 }
 
+struct LabelGenrator {
+    n: u16,
+}
+
+impl LabelGenrator {
+    fn new() -> Self {
+        Self {
+            n: 0,
+        }
+    }
+
+    fn gen(&mut self) -> String {
+        let n = self.n;
+        self.n += 1;
+        format!("LABEL{}", n)
+    }
+}
+
+// 表7-2 CodeWriterモジュール
+pub struct CodeWriter {
+    sp: StackPointer,
+    label_generator: LabelGenrator,
+}
+
 impl CodeWriter {
     pub fn new() -> Self {
         Self {
             sp: StackPointer::new(),
+            label_generator: LabelGenrator::new(),
         }
     }
 
@@ -100,6 +120,42 @@ impl CodeWriter {
                             format!("@{}", self.sp.increment()),
                             "M=D".into(),
                         ]
+                    }
+                    Operator::Eq => {
+                        let label_true = self.label_generator.gen();
+                        let label_false = self.label_generator.gen();
+
+                        let mut a = vec![
+                            // 減算して比較する
+                            format!("@{}", self.sp.decrement()),
+                            "D=M".into(),
+                            format!("@{}", self.sp.decrement()),
+                            "D=D-M".into(),
+
+                            // 判定(trueならJUMP)
+                            format!("@{}", label_true),
+                            "D;JEQ".into(),
+
+                            // 判定(falseならDにゼロをセットしてJUMP)
+                            "D=0".into(),
+                            format!("@{}", label_false),
+                            "0;JMP".into(),
+
+                            // trueのJUMP先
+                            // Dにtrue(-1)をセットする
+                            format!("({})", label_true),
+                            "D=-1".into(),
+
+                            // falseのJUMP先
+                            // JUMP前に予めDにfalse(0)がセットされている
+                            format!("({})", label_false),
+
+                            // 比較結果(Dの値)をスタックに戻す
+                            format!("@{}", self.sp.increment()),
+                            "M=D".into(),
+                        ];
+                        a.append(&mut self.set_sp());
+                        a
                     }
                     _ => todo!(),
                 }
