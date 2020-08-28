@@ -15,6 +15,8 @@ pub enum Command {
 #[derive(Debug)]
 pub enum Operator {
     Add,
+    Sub,
+    Neg,
 }
 
 impl Operator {

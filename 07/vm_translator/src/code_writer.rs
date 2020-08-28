@@ -80,6 +80,27 @@ impl CodeWriter {
                         a.append(&mut self.set_sp());
                         a
                     }
+                    Operator::Sub => {
+                        let mut a = vec![
+                            format!("@{}", self.sp.decrement()),
+                            "D=M".into(),
+                            format!("@{}", self.sp.decrement()),
+                            "D=D-M".into(),
+                            format!("@{}", self.sp.increment()),
+                            "M=D".into(),
+                        ];
+                        a.append(&mut self.set_sp());
+                        a
+                    }
+                    Operator::Neg => {
+                        vec![
+                            format!("@{}", self.sp.decrement()),
+                            "D=M".into(),
+                            "D=-D".into(),
+                            format!("@{}", self.sp.increment()),
+                            "M=D".into(),
+                        ]
+                    }
                     _ => todo!(),
                 }
             }
