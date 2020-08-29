@@ -18,12 +18,25 @@ pub enum Operator {
     Sub,
     Neg,
     Eq,
+    Gt,
+    Lt,
+    And,
+    Or,
+    Not,
 }
 
 impl Operator {
     fn from(s: &str) -> Option<Self> {
         match s {
             "add" => Some(Operator::Add),
+            "sub" => Some(Operator::Sub),
+            "neg" => Some(Operator::Neg),
+            "eq" => Some(Operator::Eq),
+            "gt" => Some(Operator::Gt),
+            "lt" => Some(Operator::Lt),
+            "and" => Some(Operator::And),
+            "or" => Some(Operator::Or),
+            "not" => Some(Operator::Not),
             _ => None,
         }
     }
@@ -93,7 +106,7 @@ impl Parser {
                     return Command::Arithmetic(arithmetic_operator);
                 }
 
-                panic!();
+                panic!(format!("the operator is not supported: {}", other));
             }
         }
     }
