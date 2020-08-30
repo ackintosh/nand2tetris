@@ -71,18 +71,30 @@ impl CodeWriter {
 
     pub fn code(&mut self, command: Command) -> Vec<String> {
         match command {
-            Command::Push(segment, index) => {
-                match segment {
+            Command::Push(memory_access) => {
+                match memory_access.segment {
                     MemorySegment::Constant => {
                         let mut a = vec![
-                            format!("@{}", index),
+                            format!("@{}", memory_access.index),
                             "D=A".into(),
-                            format!("@{}", self.sp.increment()),
-                            "M=D".into(),
                         ];
+                        a.append(&mut self.push_d_value());
                         a.append(&mut self.set_sp());
                         a
                     }
+                    MemorySegment::Local => self.push_address_value("LCL", memory_access.index),
+                    MemorySegment::Argument => self.push_address_value("ARG", memory_access.index),
+                    MemorySegment::This => self.push_address_value("THIS", memory_access.index),
+                    MemorySegment::That => self.push_address_value("THAT", memory_access.index),
+                }
+            }
+            Command::Pop(memory_access) => {
+                match memory_access.segment {
+                    MemorySegment::Constant => unreachable!(),
+                    MemorySegment::Local => self.pop_to_address_value("LCL", memory_access.index),
+                    MemorySegment::Argument => self.pop_to_address_value("ARG", memory_access.index),
+                    MemorySegment::This => self.pop_to_address_value("THIS", memory_access.index),
+                    MemorySegment::That => self.pop_to_address_value("THAT", memory_access.index),
                 }
             }
             Command::Arithmetic(operator) => {
@@ -217,5 +229,36 @@ impl CodeWriter {
             format!("@{}", self.sp.increment()),
             "M=D".into(),
         ]
+    }
+
+    fn set_memory_address_to_a(base_address: &str, index: u16) -> Vec<String> {
+        vec![
+            format!("@{}", index),
+            "D=A".into(),
+            format!("@{}", base_address),
+            "A=D+A".into(),
+        ]
+    }
+
+    fn push_address_value(&mut self, base_address: &str, index: u16) -> Vec<String> {
+        let mut a = Self::set_memory_address_to_a(base_address, index);
+        a.append(&mut vec![
+            "D=M".into(),
+        ]);
+        a.append(&mut self.push_d_value());
+        a.append(&mut self.set_sp());
+        a
+    }
+
+    fn pop_to_address_value(&mut self, base_address: &str, index: u16) -> Vec<String> {
+        let mut a = vec![
+            format!("@{}", self.sp.decrement()),
+            "D=M".into(),
+        ];
+        a.append(&mut Self::set_memory_address_to_a(base_address, index));
+        a.append(&mut vec![
+            "M=D".into(),
+        ]);
+        a
     }
 }

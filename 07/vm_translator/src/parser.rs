@@ -9,7 +9,8 @@ pub struct Parser {
 #[derive(Debug)]
 pub enum Command {
     Arithmetic(Operator),
-    Push(MemorySegment, u16), // segment, index
+    Push(MemoryAccess),
+    Pop(MemoryAccess),
 }
 
 #[derive(Debug)]
@@ -45,13 +46,37 @@ impl Operator {
 #[derive(Debug)]
 pub enum MemorySegment {
     Constant,
+    Local,
+    Argument,
+    This,
+    That,
 }
 
 impl MemorySegment {
     fn from(s: &str) -> Self {
         match s {
             "constant" => MemorySegment::Constant,
+            "local" => MemorySegment::Local,
+            "argument" => MemorySegment::Argument,
+            "this" => MemorySegment::This,
+            "that" => MemorySegment::That,
             _ => panic!(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct MemoryAccess {
+    pub segment: MemorySegment,
+    pub index: u16,
+}
+
+impl MemoryAccess {
+    fn from(segment: &str, index: u16) -> Self {
+        let segment = MemorySegment::from(segment);
+        Self {
+            segment,
+            index,
         }
     }
 }
@@ -98,8 +123,12 @@ impl Parser {
         match elems[0] {
             "push" => {
                 assert_eq!(elems.len(), 3, "push command requires 2 arguments");
-                Command::Push(MemorySegment::from(elems[1]), elems[2].parse::<u16>().unwrap())
+                Command::Push(MemoryAccess::from(elems[1], elems[2].parse::<u16>().unwrap()))
             },
+            "pop" => {
+                assert_eq!(elems.len(), 3, "pop command requires 2 arguments");
+                Command::Pop(MemoryAccess::from(elems[1], elems[2].parse::<u16>().unwrap()))
+            }
             other => {
                 if let Some(arithmetic_operator) = Operator::from(other) {
                     assert_eq!(elems.len(), 1, "arithmetic command requires no arguments");
