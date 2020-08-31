@@ -72,24 +72,6 @@ impl MemorySegment {
             _ => panic!(),
         }
     }
-
-    pub fn get_mapping(&self, index: u16) -> String {
-        match self {
-            MemorySegment::Pointer => {
-                if index == 0 {
-                    "THIS".to_owned()
-                } else if index == 1 {
-                    "THAT".to_owned()
-                } else {
-                    unreachable!();
-                }
-            }
-            MemorySegment::Temp => {
-               format!("R{}", index + 5)
-            }
-            _ => panic!()
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -117,6 +99,14 @@ impl MemoryAccess {
         Self {
             segment,
             index,
+        }
+    }
+
+    pub fn get_static_address(&self) -> u16 {
+        match self.segment {
+            MemorySegment::Pointer => 3 + self.index,
+            MemorySegment::Temp => 5 + self.index,
+            _ => unreachable!(),
         }
     }
 }
