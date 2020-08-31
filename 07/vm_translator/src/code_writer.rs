@@ -2,11 +2,11 @@ use crate::parser::Command;
 use crate::parser::MemorySegment;
 use crate::parser::Operator;
 
-struct LabelGenrator {
+struct LabelGenerator {
     n: u16,
 }
 
-impl LabelGenrator {
+impl LabelGenerator {
     fn new() -> Self {
         Self {
             n: 0,
@@ -22,13 +22,13 @@ impl LabelGenrator {
 
 // 表7-2 CodeWriterモジュール
 pub struct CodeWriter {
-    label_generator: LabelGenrator,
+    label_generator: LabelGenerator,
 }
 
 impl CodeWriter {
     pub fn new() -> Self {
         Self {
-            label_generator: LabelGenrator::new(),
+            label_generator: LabelGenerator::new(),
         }
     }
 
