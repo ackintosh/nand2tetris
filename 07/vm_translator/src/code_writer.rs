@@ -2,41 +2,6 @@ use crate::parser::Command;
 use crate::parser::MemorySegment;
 use crate::parser::Operator;
 
-struct StackPointer {
-    address: u16,
-}
-
-impl StackPointer {
-    pub fn new() -> Self {
-        Self {
-            address: 256,
-        }
-    }
-
-    pub fn increment(&mut self) -> u16 {
-        let a = self.address;
-        self.address += 1;
-        if self.address > 2047 {
-            panic!("Out of stack memory space")
-        }
-
-        return a;
-    }
-
-    pub fn decrement(&mut self) -> u16 {
-        self.address -= 1;
-        if self.address < 256 {
-            panic!("Out of stack memory space")
-        }
-
-        return self.address;
-    }
-
-    pub fn current(&self) -> u16 {
-        self.address
-    }
-}
-
 struct LabelGenrator {
     n: u16,
 }
@@ -57,14 +22,12 @@ impl LabelGenrator {
 
 // 表7-2 CodeWriterモジュール
 pub struct CodeWriter {
-    sp: StackPointer,
     label_generator: LabelGenrator,
 }
 
 impl CodeWriter {
     pub fn new() -> Self {
         Self {
-            sp: StackPointer::new(),
             label_generator: LabelGenrator::new(),
         }
     }
@@ -79,7 +42,6 @@ impl CodeWriter {
                             "D=A".into(),
                         ];
                         a.append(&mut self.push_d_value());
-                        a.append(&mut self.set_sp());
                         a
                     }
                     MemorySegment::Local => self.push_address_value("LCL", memory_access.index),
@@ -106,90 +68,57 @@ impl CodeWriter {
             Command::Arithmetic(operator) => {
                 match operator {
                     Operator::Add => {
-                        let mut a = vec![
-                            format!("@{}", self.sp.decrement()),
-                            "D=M".into(),
-                            format!("@{}", self.sp.decrement()),
-                            "D=D+M".into(),
-                        ];
+                        let mut a = Self::pop_for_binary_operator();
+                        a.append(&mut vec!["D=D+M".into()]);
                         a.append(&mut self.push_d_value());
-                        a.append(&mut self.set_sp());
                         a
                     }
                     Operator::Sub => {
-                        let mut a = vec![
-                            format!("@{}", self.sp.decrement()),
-                            "D=M".into(),
-                            format!("@{}", self.sp.decrement()),
-                            "D=M-D".into(),
-                        ];
+                        let mut a = Self::pop_for_binary_operator();
+                        a.append(&mut vec!["D=M-D".into()]);
                         a.append(&mut self.push_d_value());
-                        a.append(&mut self.set_sp());
                         a
                     }
                     Operator::Neg => {
                         let mut a = vec![
-                            format!("@{}", self.sp.decrement()),
+                            "@SP".into(),
+                            "AM=M-1".into(),
                             "D=M".into(),
                             "D=-D".into(),
                         ];
                         a.append(&mut self.push_d_value());
-                        a.append(&mut self.set_sp());
                         a
                     }
                     Operator::Eq => self.comparison_operation("JEQ"),
                     Operator::Gt => self.comparison_operation("JGT"),
                     Operator::Lt => self.comparison_operation("JLT"),
                     Operator::And => {
-                        let mut a = vec![
-                            format!("@{}", self.sp.decrement()),
-                            "D=M".into(),
-                            format!("@{}", self.sp.decrement()),
-                            "D=D&M".into(),
-                        ];
+                        let mut a = Self::pop_for_binary_operator();
+                        a.append(&mut vec!["D=D&M".into()]);
                         // 比較結果(Dの値)をスタックに戻す
                         a.append(&mut self.push_d_value());
-                        // スタックポインタを更新する
-                        a.append(&mut self.set_sp());
                         a
                     }
                     Operator::Or => {
-                        let mut a = vec![
-                            format!("@{}", self.sp.decrement()),
-                            "D=M".into(),
-                            format!("@{}", self.sp.decrement()),
-                            "D=D|M".into(),
-                        ];
+                        let mut a = Self::pop_for_binary_operator();
+                        a.append(&mut vec!["D=D|M".into()]);
                         // 比較結果(Dの値)をスタックに戻す
                         a.append(&mut self.push_d_value());
-                        // スタックポインタを更新する
-                        a.append(&mut self.set_sp());
                         a
                     }
                     Operator::Not => {
                         let mut a = vec![
-                            format!("@{}", self.sp.decrement()),
+                            "@SP".into(),
+                            "AM=M-1".into(),
                             "D=!M".into(),
                         ];
                         // 比較結果(Dの値)をスタックに戻す
                         a.append(&mut self.push_d_value());
-                        // スタックポインタを更新する
-                        a.append(&mut self.set_sp());
                         a
                     }
                 }
             }
         }
-    }
-
-    // スタックポインタを更新するアセンブリコードを返す
-    fn set_sp(&self) -> Vec<String> {
-        vec![
-            format!("@{}", self.sp.current()),
-            "D=A".into(),
-            "@SP".into(),
-            "M=D".into(),
-        ]
     }
 
     fn comparison_operation(&mut self, jump: &str) -> Vec<String> {
@@ -198,9 +127,11 @@ impl CodeWriter {
 
         let mut a = vec![
             // 減算して比較する
-            format!("@{}", self.sp.decrement()),
+            "@SP".into(),
+            "AM=M-1".into(),
             "D=M".into(),
-            format!("@{}", self.sp.decrement()),
+            "@SP".into(),
+            "AM=M-1".into(),
             "D=M-D".into(),
 
             // 判定(trueならJUMP)
@@ -224,16 +155,29 @@ impl CodeWriter {
         ];
         // 比較結果(Dの値)をスタックに戻す
         a.append(&mut self.push_d_value());
-        // スタックポインタを更新する
-        a.append(&mut self.set_sp());
         a
     }
 
     fn push_d_value(&mut self) -> Vec<String> {
         vec![
             // 結果(Dの値)をスタックに戻す
-            format!("@{}", self.sp.increment()),
+            "@SP".into(),
+            "A=M".into(),
             "M=D".into(),
+            "@SP".into(),
+            "M=M+1".into(),
+        ]
+    }
+
+    fn pop_for_binary_operator() -> Vec<String> {
+        // D -> y
+        // M -> x
+        vec![
+            "@SP".into(),
+            "AM=M-1".into(),
+            "D=M".into(),
+            "@SP".into(),
+            "AM=M-1".into(),
         ]
     }
 
@@ -254,7 +198,6 @@ impl CodeWriter {
             "D=M".into(),
         ]);
         a.append(&mut self.push_d_value());
-        a.append(&mut self.set_sp());
         a
     }
 
@@ -264,13 +207,13 @@ impl CodeWriter {
             "D=M".into(),
         ];
         a.append(&mut self.push_d_value());
-        a.append(&mut self.set_sp());
         a
     }
 
     fn pop_to_address_value(&mut self, base_address: &str, index: u16) -> Vec<String> {
         let mut a = vec![
-            format!("@{}", self.sp.decrement()),
+            "@SP".into(),
+            "AM=M-1".into(),
             "D=M".into(),
         ];
         a.append(&mut Self::set_memory_address_to_a(base_address, index));
@@ -282,7 +225,8 @@ impl CodeWriter {
 
     fn pop_to_static_address_value(&mut self, static_address: u16) -> Vec<String> {
         let mut a = vec![
-            format!("@{}", self.sp.decrement()),
+            "@SP".into(),
+            "AM=M-1".into(),
             "D=M".into(),
         ];
         a.append(&mut vec![
