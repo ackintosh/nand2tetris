@@ -45,11 +45,18 @@ impl Operator {
 
 #[derive(Debug)]
 pub enum MemorySegment {
+    // アーキテクチャ上で物理領域を占有しない、仮想的な存在
     Constant,
+    // RAMのベースアドレスを保持する
     Local,
     Argument,
     This,
     That,
+    // RAM上の決められた領域に直接マッピングされている
+    Pointer,
+    Temp,
+    // RAMアドレスの16番目から始まるスタティック変数
+    // Static,
 }
 
 impl MemorySegment {
@@ -60,7 +67,27 @@ impl MemorySegment {
             "argument" => MemorySegment::Argument,
             "this" => MemorySegment::This,
             "that" => MemorySegment::That,
+            "pointer" => MemorySegment::Pointer,
+            "temp" => MemorySegment::Temp,
             _ => panic!(),
+        }
+    }
+
+    pub fn get_mapping(&self, index: u16) -> String {
+        match self {
+            MemorySegment::Pointer => {
+                if index == 0 {
+                    "THIS".to_owned()
+                } else if index == 1 {
+                    "THAT".to_owned()
+                } else {
+                    unreachable!();
+                }
+            }
+            MemorySegment::Temp => {
+               format!("R{}", index + 5)
+            }
+            _ => panic!()
         }
     }
 }
@@ -74,6 +101,19 @@ pub struct MemoryAccess {
 impl MemoryAccess {
     fn from(segment: &str, index: u16) -> Self {
         let segment = MemorySegment::from(segment);
+        match segment {
+            MemorySegment::Pointer => {
+                if index > 3 {
+                    panic!(format!("index {} is not supported", index));
+                }
+            }
+            MemorySegment::Temp => {
+                if index > 7 {
+                    panic!(format!("index {} is not supported", index));
+                }
+            }
+            _ => {}
+        }
         Self {
             segment,
             index,

@@ -86,6 +86,9 @@ impl CodeWriter {
                     MemorySegment::Argument => self.push_address_value("ARG", memory_access.index),
                     MemorySegment::This => self.push_address_value("THIS", memory_access.index),
                     MemorySegment::That => self.push_address_value("THAT", memory_access.index),
+                    MemorySegment::Pointer | MemorySegment::Temp => {
+                        self.push_address_value(memory_access.segment.get_mapping(memory_access.index).as_str(), 0)
+                    }
                 }
             }
             Command::Pop(memory_access) => {
@@ -95,6 +98,9 @@ impl CodeWriter {
                     MemorySegment::Argument => self.pop_to_address_value("ARG", memory_access.index),
                     MemorySegment::This => self.pop_to_address_value("THIS", memory_access.index),
                     MemorySegment::That => self.pop_to_address_value("THAT", memory_access.index),
+                    MemorySegment::Pointer | MemorySegment::Temp => {
+                        self.pop_to_address_value(memory_access.segment.get_mapping(memory_access.index).as_str(), 0)
+                    }
                 }
             }
             Command::Arithmetic(operator) => {
