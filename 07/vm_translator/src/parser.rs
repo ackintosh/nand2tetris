@@ -56,7 +56,7 @@ pub enum MemorySegment {
     Pointer,
     Temp,
     // RAMアドレスの16番目から始まるスタティック変数
-    // Static,
+    Static,
 }
 
 impl MemorySegment {
@@ -69,6 +69,7 @@ impl MemorySegment {
             "that" => MemorySegment::That,
             "pointer" => MemorySegment::Pointer,
             "temp" => MemorySegment::Temp,
+            "static" => MemorySegment::Static,
             _ => panic!(),
         }
     }

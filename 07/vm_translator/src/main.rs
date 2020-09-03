@@ -23,7 +23,7 @@ fn main() {
     );
 
     let mut assembly_codes = vec![];
-    let mut code_writer = CodeWriter::new();
+    let mut code_writer = CodeWriter::new(String::from(path.file_stem().unwrap().to_str().unwrap()));
 
     loop {
         if let Some(command) = parser.advance() {

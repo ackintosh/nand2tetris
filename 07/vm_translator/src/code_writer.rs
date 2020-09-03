@@ -23,12 +23,14 @@ impl LabelGenerator {
 // 表7-2 CodeWriterモジュール
 pub struct CodeWriter {
     label_generator: LabelGenerator,
+    variable_symbol_prefix: String,
 }
 
 impl CodeWriter {
-    pub fn new() -> Self {
+    pub fn new(variable_symbol_prefix: String) -> Self {
         Self {
             label_generator: LabelGenerator::new(),
+            variable_symbol_prefix,
         }
     }
 
@@ -51,6 +53,14 @@ impl CodeWriter {
                     MemorySegment::Pointer | MemorySegment::Temp => {
                         self.push_static_address_value(memory_access.get_static_address())
                     }
+                    MemorySegment::Static => {
+                        let mut a = vec![
+                            format!("@{}.{}", self.variable_symbol_prefix, memory_access.index),
+                            "D=M".into(),
+                        ];
+                        a.append(&mut self.push_d_value());
+                        a
+                    }
                 }
             }
             Command::Pop(memory_access) => {
@@ -62,6 +72,15 @@ impl CodeWriter {
                     MemorySegment::That => self.pop_to_address_value("THAT", memory_access.index),
                     MemorySegment::Pointer | MemorySegment::Temp => {
                         self.pop_to_static_address_value(memory_access.get_static_address())
+                    }
+                    MemorySegment::Static => {
+                        vec![
+                            "@SP".into(),
+                            "AM=M-1".into(),
+                            "D=M".into(),
+                            format!("@{}.{}", self.variable_symbol_prefix, memory_access.index),
+                            "M=D".into(),
+                        ]
                     }
                 }
             }
