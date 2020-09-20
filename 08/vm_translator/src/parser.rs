@@ -11,6 +11,8 @@ pub enum Command {
     Arithmetic(Operator),
     Push(MemoryAccess),
     Pop(MemoryAccess),
+    Label(String),
+    IfGoto(String),
 }
 
 #[derive(Debug)]
@@ -129,13 +131,13 @@ impl Parser {
                     return None;
                 }
 
-                // スペースを削除
-                buf = String::from(buf.trim());
-
                 // コメント以降を削除
                 if let Some(pos) = buf.find("//") {
                     buf.replace_range(pos.., "");
                 }
+
+                // スペースを削除
+                buf = String::from(buf.trim());
 
                 if buf.len() == 0 {
                     continue;
@@ -159,6 +161,14 @@ impl Parser {
             "pop" => {
                 assert_eq!(elems.len(), 3, "pop command requires 2 arguments");
                 Command::Pop(MemoryAccess::from(elems[1], elems[2].parse::<u16>().unwrap()))
+            }
+            "label" => {
+                assert_eq!(elems.len(), 2, "label command requires 1 argument");
+                Command::Label(String::from(elems[1]))
+            }
+            "if-goto" => {
+                assert_eq!(elems.len(), 2, "label command requires 1 argument");
+                Command::IfGoto(String::from(elems[1]))
             }
             other => {
                 if let Some(arithmetic_operator) = Operator::from(other) {

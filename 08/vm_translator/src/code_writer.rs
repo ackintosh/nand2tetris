@@ -137,6 +137,20 @@ impl CodeWriter {
                     }
                 }
             }
+            Command::Label(label) => {
+                vec![
+                    format!("({})", label),
+                ]
+            }
+            Command::IfGoto(label) => {
+                vec![
+                    "@SP".into(),
+                    "AM=M-1".into(),
+                    "D=M".into(),
+                    format!("@{}", label),
+                    "D;JGT".into(),
+                ]
+            }
         }
     }
 
