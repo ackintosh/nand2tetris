@@ -16,6 +16,7 @@ pub enum Command {
     Goto(String),
     Function(Function),
     Call(Call),
+    Return,
 }
 
 #[derive(Debug)]
@@ -214,6 +215,10 @@ impl Parser {
             "call" => {
                 assert_eq!(elems.len(), 3, "call command requires 2 arguments");
                 Command::Call(Call::new(String::from(elems[1]), elems[2].parse::<u16>().unwrap()))
+            }
+            "return" => {
+                assert_eq!(elems.len(), 1, "return command requires no arguments");
+                Command::Return
             }
             other => {
                 if let Some(arithmetic_operator) = Operator::from(other) {

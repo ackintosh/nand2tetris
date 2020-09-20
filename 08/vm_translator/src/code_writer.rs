@@ -209,6 +209,76 @@ impl CodeWriter {
                 ]);
                 a
             }
+            Command::Return => {
+                let mut a = vec![
+                    // FRAME = LCL
+                    "@LCL".into(),
+                    "D=M".into(),
+                    "@FRAME".into(),
+                    "M=D".into(),
+                    // RET = *(FRAME-5)
+                    "@FRAME".into(),
+                    "D=M".into(),
+                    "@5".into(),
+                    "D=D-A".into(),
+                    "@RET".into(),
+                    "M=D".into(),
+                ];
+                // *ARG = pop()
+                a.append(&mut self.pop_to_address_value("ARG", 0));
+                // SP = ARG+1
+                a.append(&mut vec![
+                    "@ARG".into(),
+                    "D=M+1".into(),
+                    "@SP".into(),
+                    "M=D".into(),
+                ]);
+                // THAT = *(FRAME-1)
+                a.append(&mut vec![
+                    "@FRAME".into(),
+                    "A=M-1".into(),
+                    "D=M".into(),
+                    "@THAT".into(),
+                    "M=D".into(),
+                ]);
+                // THIS = *(FRAME-2)
+                a.append(&mut vec![
+                    "@FRAME".into(),
+                    "D=M".into(),
+                    "@2".into(),
+                    "A=D-A".into(),
+                    "D=M".into(),
+                    "@THIS".into(),
+                    "M=D".into(),
+                ]);
+                // ARG = *(FRAME-3)
+                a.append(&mut vec![
+                    "@FRAME".into(),
+                    "D=M".into(),
+                    "@3".into(),
+                    "A=D-A".into(),
+                    "D=M".into(),
+                    "@ARG".into(),
+                    "M=D".into(),
+                ]);
+                // LCL = *(FRAME-4)
+                a.append(&mut vec![
+                    "@FRAME".into(),
+                    "D=M".into(),
+                    "@4".into(),
+                    "A=D-A".into(),
+                    "D=M".into(),
+                    "@LCL".into(),
+                    "M=D".into(),
+                ]);
+                // goto RET
+                a.append(&mut vec![
+                    "@RET".into(),
+                    "A=M".into(),
+                    "0;JMP".into(),
+                ]);
+                a
+            }
         }
     }
 
