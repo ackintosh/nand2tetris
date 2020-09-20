@@ -167,6 +167,48 @@ impl CodeWriter {
                 }
                 a
             }
+            Command::Call(call) => {
+                let return_label = self.label_generator.gen();
+                let mut a = vec![];
+                // push return-address
+                a.append(&mut self.push_address_value(return_label.as_str(), 0));
+                // push LCL
+                a.append(&mut self.push_address_value("LCL", 0));
+                // push ARG
+                a.append(&mut self.push_address_value("ARG", 0));
+                // push THIS
+                a.append(&mut self.push_address_value("THIS", 0));
+                // push THAT
+                a.append(&mut self.push_address_value("THAT", 0));
+                // ARG = SP-n-5
+                a.append(&mut vec![
+                    "@SP".into(),
+                    "D=M".into(),
+                    format!("@{}", call.num_arguments),
+                    "D=D-A".into(),
+                    "@5".into(),
+                    "D=D-A".into(),
+                    "@ARG".into(),
+                    "M=D".into(),
+                ]);
+                // LCL = SP
+                a.append(&mut vec![
+                    "@SP".into(),
+                    "D=M".into(),
+                    "@LCL".into(),
+                    "M=D".into(),
+                ]);
+                // goto f
+                a.append(&mut vec![
+                    format!("@{}", call.function_name),
+                    "0;JMP".into(),
+                ]);
+                // (return-address)
+                a.append(&mut vec![
+                    format!("({})", return_label),
+                ]);
+                a
+            }
         }
     }
 

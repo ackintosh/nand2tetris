@@ -15,6 +15,7 @@ pub enum Command {
     IfGoto(String),
     Goto(String),
     Function(Function),
+    Call(Call),
 }
 
 #[derive(Debug)]
@@ -116,7 +117,8 @@ impl MemoryAccess {
     }
 }
 
-struct Function {
+#[derive(Debug)]
+pub struct Function {
     pub name: String,
     pub num_local_variables: u16,
 }
@@ -126,6 +128,21 @@ impl Function {
         Self {
             name,
             num_local_variables,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Call {
+    pub function_name: String,
+    pub num_arguments: u16,
+}
+
+impl Call {
+    fn new(function_name: String, num_arguments: u16) -> Self {
+        Self {
+            function_name,
+            num_arguments,
         }
     }
 }
@@ -193,6 +210,10 @@ impl Parser {
             "function" => {
                 assert_eq!(elems.len(), 3, "function command requires 2 arguments");
                 Command::Function(Function::new(String::from(elems[1]), elems[2].parse::<u16>().unwrap()))
+            }
+            "call" => {
+                assert_eq!(elems.len(), 3, "call command requires 2 arguments");
+                Command::Call(Call::new(String::from(elems[1]), elems[2].parse::<u16>().unwrap()))
             }
             other => {
                 if let Some(arithmetic_operator) = Operator::from(other) {
