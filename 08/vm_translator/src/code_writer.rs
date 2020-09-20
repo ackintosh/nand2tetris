@@ -157,6 +157,16 @@ impl CodeWriter {
                     "0;JMP".into(),
                 ]
             }
+            Command::Function(function) => {
+                let mut a = vec![
+                    format!("({})", function.name),
+                    "D=0".into(),
+                ];
+                for _ in 0..function.num_local_variables {
+                    a.append(&mut self.push_d_value());
+                }
+                a
+            }
         }
     }
 
