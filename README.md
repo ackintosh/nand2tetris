@@ -9,7 +9,7 @@
 - [x] 5. [コンピュータアーキテクチャ (Computer Architecture)](https://github.com/ackintosh/nand2tetris/tree/master/05)
 - [x] 6. [アセンブラ (Assembler)](https://github.com/ackintosh/nand2tetris/tree/master/06)
 - [x] 7. [バーチャルマシン#1 : スタック操作 (Virtual Machine Ⅰ: Stack Arithmetic)](https://github.com/ackintosh/nand2tetris/tree/master/07)
-- [ ] 8. バーチャルマシン#2 : プログラム制御 (Virtual Machine Ⅱ: Program Control)
+- [ ] 8. [バーチャルマシン#2 : プログラム制御 (Virtual Machine Ⅱ: Program Control)](https://github.com/ackintosh/nand2tetris/tree/master/08)
 - [ ] 9. 高水準言語 (High-Level Language)
 - [ ] 10. コンパイラ#1 : 構文解析 (Compiler Ⅰ: Syntax Analysis)
 - [ ] 11. コンパイラ#2 : コード生成 (Compiler Ⅱ: Code Generation)
