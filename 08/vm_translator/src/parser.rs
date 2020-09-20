@@ -13,6 +13,7 @@ pub enum Command {
     Pop(MemoryAccess),
     Label(String),
     IfGoto(String),
+    Goto(String),
 }
 
 #[derive(Debug)]
@@ -167,8 +168,12 @@ impl Parser {
                 Command::Label(String::from(elems[1]))
             }
             "if-goto" => {
-                assert_eq!(elems.len(), 2, "label command requires 1 argument");
+                assert_eq!(elems.len(), 2, "if-goto command requires 1 argument");
                 Command::IfGoto(String::from(elems[1]))
+            }
+            "goto" => {
+                assert_eq!(elems.len(), 2, "goto command requires 1 argument");
+                Command::Goto(String::from(elems[1]))
             }
             other => {
                 if let Some(arithmetic_operator) = Operator::from(other) {

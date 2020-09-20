@@ -151,6 +151,12 @@ impl CodeWriter {
                     "D;JGT".into(),
                 ]
             }
+            Command::Goto(label) => {
+                vec![
+                    format!("@{}", label),
+                    "0;JMP".into(),
+                ]
+            }
         }
     }
 
