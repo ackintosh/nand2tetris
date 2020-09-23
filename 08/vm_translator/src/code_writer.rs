@@ -36,6 +36,17 @@ impl CodeWriter {
         }
     }
 
+    pub fn bootstrap_code() -> Vec<String> {
+        vec![
+            "@256".into(),
+            "D=A".into(),
+            "@SP".into(),
+            "M=D".into(),
+            "@Sys.init".into(),
+            "0;JMP".into(),
+        ]
+    }
+
     pub fn code(&mut self, command: Command) -> Vec<String> {
         match command {
             Command::Push(memory_access) => {

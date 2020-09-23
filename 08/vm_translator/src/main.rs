@@ -7,8 +7,6 @@ use std::fs::File;
 mod code_writer;
 mod parser;
 
-// TODO: ブートストラップコードの実装
-
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     println!("args: {:?}", args);
@@ -24,6 +22,8 @@ fn main() {
     println!("{:?}", vm_files);
 
     let mut assembly_codes = vec![];
+    assembly_codes.extend(CodeWriter::bootstrap_code());
+
     for pathbuf in vm_files.iter() {
         assembly_codes.extend(parse(pathbuf.as_path()));
     }
