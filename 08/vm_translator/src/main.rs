@@ -8,7 +8,6 @@ mod code_writer;
 mod parser;
 
 // TODO: ブートストラップコードの実装
-// TODO: ラベルジェネレータの一意性修正
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();

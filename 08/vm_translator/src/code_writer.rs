@@ -4,19 +4,21 @@ use crate::parser::Operator;
 
 struct LabelGenerator {
     n: u16,
+    prefix: String,
 }
 
 impl LabelGenerator {
-    fn new() -> Self {
+    fn new(prefix: String) -> Self {
         Self {
             n: 0,
+            prefix,
         }
     }
 
     fn gen(&mut self) -> String {
         let n = self.n;
         self.n += 1;
-        format!("LABEL{}", n)
+        format!("LABEL.{}.{}", self.prefix, n)
     }
 }
 
@@ -27,10 +29,10 @@ pub struct CodeWriter {
 }
 
 impl CodeWriter {
-    pub fn new(variable_symbol_prefix: String) -> Self {
+    pub fn new(prefix: String) -> Self {
         Self {
-            label_generator: LabelGenerator::new(),
-            variable_symbol_prefix,
+            label_generator: LabelGenerator::new(prefix.clone()),
+            variable_symbol_prefix: prefix,
         }
     }
 
