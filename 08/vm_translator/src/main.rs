@@ -27,11 +27,10 @@ fn main() {
     for pathbuf in vm_files.iter() {
         assembly_codes.extend(parse(pathbuf.as_path()));
     }
-
     println!("assembly_codes: {:?}", assembly_codes);
 
-    let mut output_path = PathBuf::from(path);
-    output_path.set_extension("asm");
+    let output_path = output_path(path);
+    println!("output_path: {:?}", output_path);
 
     let mut writer = BufWriter::new(File::create(output_path).expect("failed to create asm file"));
     for code in assembly_codes.iter() {
@@ -79,4 +78,23 @@ fn parse(path: &Path) -> Vec<String> {
     }
 
     assembly_codes
+}
+
+fn output_path(path: &Path) -> PathBuf {
+    if path.is_dir() {
+        // `/foo/bar` -> `/foo/bar/bar.asm`
+        let mut output_path = PathBuf::from(path);
+        output_path.push(
+            format!(
+                "{}.asm",
+                output_path.file_name().expect("should have file_name").to_str().unwrap()
+            )
+        );
+        output_path
+    } else {
+        // `/foo/bar.vm` -> `/foo/bar.asm`
+        let mut output_path = PathBuf::from(path);
+        output_path.set_extension("asm");
+        output_path
+    }
 }
