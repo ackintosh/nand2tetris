@@ -162,7 +162,7 @@ impl CodeWriter {
                     "AM=M-1".into(),
                     "D=M".into(),
                     format!("@{}", label),
-                    "D;JGT".into(),
+                    "D;JNE".into(),
                 ]
             }
             Command::Goto(label) => {
@@ -185,7 +185,11 @@ impl CodeWriter {
                 let return_label = self.label_generator.gen();
                 let mut a = vec![];
                 // push return-address
-                a.append(&mut self.push_address_value(return_label.as_str(), 0));
+                a.extend(vec![
+                    format!("@{}", return_label),
+                    "D=A".into(),
+                ]);
+                a.extend(self.push_d_value());
                 // push LCL
                 a.append(&mut self.push_address_value("LCL", 0));
                 // push ARG
