@@ -18,7 +18,7 @@ impl LabelGenerator {
     fn gen(&mut self) -> String {
         let n = self.n;
         self.n += 1;
-        format!("LABEL.{}.{}", self.prefix, n)
+        format!("LABEL{}{}", self.prefix, n)
     }
 }
 
@@ -232,14 +232,16 @@ impl CodeWriter {
                     // FRAME = LCL
                     "@LCL".into(),
                     "D=M".into(),
-                    "@FRAME".into(),
+                    "@R13".into(),
                     "M=D".into(),
                     // RET = *(FRAME-5)
-                    "@FRAME".into(),
+                    "@R13".into(),
                     "D=M".into(),
                     "@5".into(),
                     "D=D-A".into(),
-                    "@RET".into(),
+                    "A=D".into(),
+                    "D=M".into(),
+                    "@R14".into(),
                     "M=D".into(),
                 ];
                 // *ARG = pop()
@@ -253,7 +255,7 @@ impl CodeWriter {
                 ]);
                 // THAT = *(FRAME-1)
                 a.append(&mut vec![
-                    "@FRAME".into(),
+                    "@R13".into(),
                     "A=M-1".into(),
                     "D=M".into(),
                     "@THAT".into(),
@@ -261,7 +263,7 @@ impl CodeWriter {
                 ]);
                 // THIS = *(FRAME-2)
                 a.append(&mut vec![
-                    "@FRAME".into(),
+                    "@R13".into(),
                     "D=M".into(),
                     "@2".into(),
                     "A=D-A".into(),
@@ -271,7 +273,7 @@ impl CodeWriter {
                 ]);
                 // ARG = *(FRAME-3)
                 a.append(&mut vec![
-                    "@FRAME".into(),
+                    "@R13".into(),
                     "D=M".into(),
                     "@3".into(),
                     "A=D-A".into(),
@@ -281,7 +283,7 @@ impl CodeWriter {
                 ]);
                 // LCL = *(FRAME-4)
                 a.append(&mut vec![
-                    "@FRAME".into(),
+                    "@R13".into(),
                     "D=M".into(),
                     "@4".into(),
                     "A=D-A".into(),
@@ -291,7 +293,7 @@ impl CodeWriter {
                 ]);
                 // goto RET
                 a.append(&mut vec![
-                    "@RET".into(),
+                    "@R14".into(),
                     "A=M".into(),
                     "0;JMP".into(),
                 ]);
