@@ -1,4 +1,4 @@
-use crate::parser::Command;
+use crate::parser::{Command, Call};
 use crate::parser::MemorySegment;
 use crate::parser::Operator;
 
@@ -37,14 +37,15 @@ impl CodeWriter {
     }
 
     pub fn bootstrap_code() -> Vec<String> {
-        vec![
+        let mut a = vec![
             "@256".into(),
             "D=A".into(),
             "@SP".into(),
             "M=D".into(),
-            "@Sys.init".into(),
-            "0;JMP".into(),
-        ]
+        ];
+        let mut cw = Self::new("bootstrap".into());
+        a.extend(cw.code(Command::Call(Call::new("Sys.init".into(), 0))));
+        a
     }
 
     pub fn code(&mut self, command: Command) -> Vec<String> {

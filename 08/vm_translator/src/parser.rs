@@ -140,7 +140,7 @@ pub struct Call {
 }
 
 impl Call {
-    fn new(function_name: String, num_arguments: u16) -> Self {
+    pub fn new(function_name: String, num_arguments: u16) -> Self {
         Self {
             function_name,
             num_arguments,
