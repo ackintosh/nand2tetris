@@ -11,7 +11,7 @@
 - [x] 7. [バーチャルマシン#1 : スタック操作 (Virtual Machine Ⅰ: Stack Arithmetic)](https://github.com/ackintosh/nand2tetris/tree/master/07)
 - [ ] 8. [バーチャルマシン#2 : プログラム制御 (Virtual Machine Ⅱ: Program Control)](https://github.com/ackintosh/nand2tetris/tree/master/08)
 - [x] 9. [高水準言語 (High-Level Language)](https://github.com/ackintosh/nand2tetris/tree/master/09)
-- [ ] 10. コンパイラ#1 : 構文解析 (Compiler Ⅰ: Syntax Analysis)
+- [ ] 10. [コンパイラ#1 : 構文解析 (Compiler Ⅰ: Syntax Analysis)](https://github.com/ackintosh/nand2tetris/tree/master/10)
 - [ ] 11. コンパイラ#2 : コード生成 (Compiler Ⅱ: Code Generation)
 - [ ] 12. オペレーティングシステム (Operating System)
 
