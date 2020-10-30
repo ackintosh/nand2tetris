@@ -1,5 +1,5 @@
 use std::path::{Path, PathBuf};
-use std::io::{Error, BufReader};
+use std::io::{Error, BufReader, BufRead};
 use std::fs::File;
 
 fn main() {
@@ -26,8 +26,9 @@ impl Analyzer {
         println!("jack_files: {:?}", jack_files);
 
         for f in jack_files {
-            let f = std::fs::File::open(f).expect(format!("failed to open .jack file: {:?}", f).as_str());
-            let tokenizer = Tokenizer::new(f);
+            let f = std::fs::File::open(f.clone()).expect(format!("failed to open .jack file: {:?}", f).as_str());
+            let mut tokenizer = Tokenizer::new(f);
+            let tokens = tokenizer.generate_tokens();
         }
     }
 
@@ -53,14 +54,82 @@ impl Analyzer {
     }
 }
 
-struct Tokenizer {
+struct JackReader {
     reader: BufReader<File>
+}
+
+impl JackReader {
+    fn advance(&mut self) -> Option<String> {
+        let mut buf = String::new();
+
+        loop {
+            if let Ok(len) = self.reader.read_line(&mut buf) {
+                if len == 0 {
+                    // EOF
+                    return None;
+                }
+
+                // コメント以降を削除
+                if let Some(pos) = buf.find("//") {
+                    buf.replace_range(pos.., "");
+                }
+
+                if let Some(pos_start) = buf.find("/*") {
+                    let pos_end = {
+                        let s = &buf[pos_start..];
+                        if let Some(pos_end) = s.find("*/") {
+                            Some(pos_start + pos_end + 2) // "*/" の分を +2 している
+                        } else {
+                            None
+                        }
+                    };
+                    if pos_end.is_some() {
+                        buf.replace_range(pos_start..pos_end.unwrap(    ), "");
+                    }
+                }
+
+                let buf = String::from(buf.trim());
+
+                if buf.len() == 0 {
+                    continue;
+                }
+
+                return Some(buf);
+            } else {
+                panic!("failed to read line");
+            }
+        }
+    }
+}
+
+struct Tokenizer {
+    reader: JackReader,
 }
 
 impl Tokenizer {
     fn new(file: File) -> Self {
         Self {
-            reader: BufReader::new(file),
+            reader: JackReader { reader: BufReader::new(file) },
         }
     }
+
+    fn generate_tokens(&mut self) -> Tokens {
+        while let Some(line) = self.reader.advance() {
+            println!("line: {}", line);
+        }
+
+        return Tokens { elements: vec![] }
+    }
+}
+
+struct Tokens {
+    elements: Vec<Token>,
+}
+
+enum Token {
+    Keyword,
+    Symbol,
+    Identifier,
+    IntConst,
+    StringConst,
 }
