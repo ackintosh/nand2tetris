@@ -128,24 +128,20 @@ impl Tokenizer {
         while let Some(line) = self.reader.read_line() {
             println!("line: {}", line);
 
-            let words = line.split(" ").collect::<Vec<&str>>().iter()
-                .map(|&word| {
-                    word.trim()
-                }).filter(|&word| {
-                    word.len() > 0
-                }).collect::<Vec<_>>();
-            if words.len() == 0 {
-                continue;
-            }
-            println!("words: {:?}", words);
-
+            let words = Self::split_with_space(&line);
             let tokens = words.iter()
-                .map(|&word| {
-                    Self::split(word)
+                .map(|word| {
+                    word.trim()
+                })
+                .filter(|&word| {
+                    word.len() > 0
+                })
+                .map(|word| {
+                    Self::split_with_symbol(word)
                 })
                 .flatten()
-                .map(|part| {
-                    Self::parse(&part)
+                .map(|word| {
+                    Self::parse(&word)
                 })
                 .collect::<Vec<_>>();
             println!("tokens: {:?}", tokens);
@@ -155,7 +151,46 @@ impl Tokenizer {
         return Tokens { elements: elements.into_iter().flatten().collect::<Vec<Token>>() }
     }
 
-    fn split(word: &str) -> Vec<String> {
+    fn split_with_space(line: &str) -> Vec<String> {
+        let mut words = vec![];
+        let mut buf = vec![];
+        let mut is_string = false;
+
+        for c in line.chars() {
+            match c {
+                ' ' => {
+                    if is_string {
+                        buf.push(c.to_string());
+                    } else {
+                        words.push(buf.join(""));
+                        buf.clear();
+                    }
+                },
+                '"' => {
+                    if is_string {
+                        buf.push(c.to_string());
+                        words.push(buf.join(""));
+                        buf.clear();
+                        is_string = false;
+                    } else {
+                        is_string = true;
+                        buf.push(c.to_string());
+                    }
+                },
+                other => {
+                    buf.push(other.to_string());
+                }
+            }
+        }
+
+        if buf.len() > 0 {
+            words.push(buf.join(""));
+        }
+
+        words
+    }
+
+    fn split_with_symbol(word: &str) -> Vec<String> {
         let mut i = 0;
         let mut parts: Vec<String> = vec![];
         let mut buf: Vec<char> = vec![];
