@@ -1,5 +1,5 @@
 use std::path::{Path, PathBuf};
-use std::io::{Error, BufReader, BufRead};
+use std::io::{Error, BufReader, BufRead, BufWriter, Write};
 use std::fs::File;
 
 fn main() {
@@ -25,10 +25,13 @@ impl Analyzer {
 
         println!("jack_files: {:?}", jack_files);
 
-        for f in jack_files {
-            let f = std::fs::File::open(f.clone()).expect(format!("failed to open .jack file: {:?}", f).as_str());
+        for jack_file in jack_files {
+            let f = std::fs::File::open(jack_file.clone()).expect(format!("failed to open .jack file: {:?}", jack_file).as_str());
             let mut tokenizer = Tokenizer::new(f);
             let tokens = tokenizer.generate_tokens();
+            let destination = Self::source_to_destination(&jack_file);
+            println!("destination: {:?}", destination);
+            save(destination, tokens);
         }
     }
 
@@ -51,6 +54,12 @@ impl Analyzer {
                 Ok(vec![])
             }
         }
+    }
+
+    fn source_to_destination(path: &PathBuf) -> PathBuf {
+        let mut  dest = path.clone();
+        dest.set_extension("xml");
+        dest
     }
 }
 
@@ -182,7 +191,7 @@ impl Tokenizer {
 
         match word.chars().nth(0).expect("should have chars at least 1") {
             '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9' => {
-                return Token::IntConst(String::from(word));
+                return Token::IntegerConst(String::from(word));
             }
             '"' => {
                 return Token::StringConst(String::from(word.trim_matches('"')));
@@ -249,6 +258,30 @@ enum Token {
     Keyword(String),
     Symbol(String),
     Identifier(String),
-    IntConst(String),
+    IntegerConst(String),
     StringConst(String),
+}
+
+fn save(destination: PathBuf, tokens: Tokens) {
+    let mut writer = BufWriter::new(File::create(destination).expect("failed to create a file"));
+    writer.write_all(b"<tokens>\n");
+    for token in tokens.elements {
+        match token {
+            Token::Keyword(keyword) => writer.write_all(format!("<keyword>{}</keyword>\n", keyword).as_bytes()),
+            Token::Symbol(symbol) => writer.write_all(format!("<symbol>{}</symbol>\n", convert_to_xml_symbol(&symbol)).as_bytes()),
+            Token::Identifier(identifier) => writer.write_all(format!("<identifier>{}</identifier>\n", identifier).as_bytes()),
+            Token::IntegerConst(integer_const) => writer.write_all(format!("<integerConstant>{}</integerConstant>\n", integer_const).as_bytes()),
+            Token::StringConst(string_const) => writer.write_all(format!("<stringConstant>{}</stringConstant>\n", string_const).as_bytes()),
+        };
+    }
+    writer.write_all(b"</tokens>");
+}
+
+fn convert_to_xml_symbol(symbol: &str) -> String {
+    match symbol {
+        "<" => "&lt;".to_owned(),
+        ">" => "&gt;".to_owned(),
+        "&" => "&amp;".to_owned(),
+        other => String::from(other),
+    }
 }
