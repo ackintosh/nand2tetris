@@ -143,6 +143,10 @@ impl Tokenizer {
             return Token::Keyword(String::from(word));
         }
 
+        if SYMBOL.contains(&word) {
+            return Token::Symbol(String::from(word));
+        }
+
         Token::StringConst
     }
 }
@@ -175,10 +179,32 @@ const KEYWORD: [&str; 21] = [
     "return",
 ];
 
+const SYMBOL: [&str; 19] = [
+    "{",
+    "}",
+    "(",
+    ")",
+    "[",
+    "]",
+    ".",
+    ",",
+    ";",
+    "+",
+    "-",
+    "*",
+    "/",
+    "&",
+    "|",
+    "<",
+    ">",
+    "=",
+    "~",
+];
+
 #[derive(Debug)]
 enum Token {
     Keyword(String),
-    Symbol,
+    Symbol(String),
     Identifier,
     IntConst,
     StringConst,
