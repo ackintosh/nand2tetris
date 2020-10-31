@@ -114,6 +114,8 @@ impl Tokenizer {
     }
 
     fn generate_tokens(&mut self) -> Tokens {
+        let mut elements = vec![];
+
         while let Some(line) = self.reader.read_line() {
             println!("line: {}", line);
 
@@ -128,13 +130,44 @@ impl Tokenizer {
             }
             println!("words: {:?}", words);
 
-            for w in words {
-                let token = Self::parse(w);
-                println!("token: {:?}", token);
-            }
+            let tokens = words.iter()
+                .map(|&word| {
+                    Self::split(word)
+                })
+                .flatten()
+                .map(|part| {
+                    Self::parse(&part)
+                })
+                .collect::<Vec<_>>();
+            println!("tokens: {:?}", tokens);
+            elements.push(tokens);
         }
 
-        return Tokens { elements: vec![] }
+        return Tokens { elements: elements.into_iter().flatten().collect::<Vec<Token>>() }
+    }
+
+    fn split(word: &str) -> Vec<String> {
+        let mut i = 0;
+        let mut parts: Vec<String> = vec![];
+        let mut buf: Vec<char> = vec![];
+        while i < word.len() {
+            let c = word.chars().nth(i).unwrap();
+            if SYMBOL.contains(&c.to_string().as_str()) {
+                if buf.len() > 0 {
+                    parts.push(buf.iter().map(|c| c.to_string() ).collect::<Vec<_>>().join(""));
+                    buf.clear();
+                }
+                parts.push(String::from(c.to_string()))
+            } else {
+                buf.push(c);
+            }
+            i += 1;
+        }
+        if buf.len() > 0 {
+            parts.push(buf.iter().map(|c| c.to_string() ).collect::<Vec<_>>().join(""));
+        }
+
+        parts
     }
 
     fn parse(word: &str) -> Token {
@@ -155,11 +188,9 @@ impl Tokenizer {
                 return Token::StringConst(String::from(word.trim_matches('"')));
             }
             _ => {
-                todo!()
+                return Token::Identifier(String::from(word));
             }
         }
-
-        Token::Identifier
     }
 }
 
@@ -217,7 +248,7 @@ const SYMBOL: [&str; 19] = [
 enum Token {
     Keyword(String),
     Symbol(String),
-    Identifier,
+    Identifier(String),
     IntConst(String),
     StringConst(String),
 }
