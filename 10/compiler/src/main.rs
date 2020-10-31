@@ -59,7 +59,7 @@ struct JackReader {
 }
 
 impl JackReader {
-    fn advance(&mut self) -> Option<String> {
+    fn read_line(&mut self) -> Option<String> {
         let mut buf = String::new();
 
         loop {
@@ -114,11 +114,36 @@ impl Tokenizer {
     }
 
     fn generate_tokens(&mut self) -> Tokens {
-        while let Some(line) = self.reader.advance() {
+        while let Some(line) = self.reader.read_line() {
             println!("line: {}", line);
+
+            let words = line.split(" ").collect::<Vec<&str>>().iter()
+                .map(|&word| {
+                    word.trim()
+                }).filter(|&word| {
+                    word.len() > 0
+                }).collect::<Vec<_>>();
+            if words.len() == 0 {
+                continue;
+            }
+            println!("words: {:?}", words);
+
+            for w in words {
+                let token = Self::parse(w);
+                println!("token: {:?}", token);
+            }
         }
 
         return Tokens { elements: vec![] }
+    }
+
+    fn parse(word: &str) -> Token {
+        println!("w: {}", word);
+        if KEYWORD.contains(&word) {
+            return Token::Keyword(String::from(word));
+        }
+
+        Token::StringConst
     }
 }
 
@@ -126,8 +151,33 @@ struct Tokens {
     elements: Vec<Token>,
 }
 
+const KEYWORD: [&str; 21] = [
+    "class",
+    "constructor",
+    "function",
+    "method",
+    "field",
+    "static",
+    "var",
+    "int",
+    "char",
+    "boolean",
+    "void",
+    "true",
+    "false",
+    "null",
+    "this",
+    "let",
+    "do",
+    "if",
+    "else",
+    "while",
+    "return",
+];
+
+#[derive(Debug)]
 enum Token {
-    Keyword,
+    Keyword(String),
     Symbol,
     Identifier,
     IntConst,
