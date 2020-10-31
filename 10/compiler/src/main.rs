@@ -147,7 +147,19 @@ impl Tokenizer {
             return Token::Symbol(String::from(word));
         }
 
-        Token::StringConst
+        match word.chars().nth(0).expect("should have chars at least 1") {
+            '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9' => {
+                return Token::IntConst(String::from(word));
+            }
+            '"' => {
+                return Token::StringConst(String::from(word.trim_matches('"')));
+            }
+            _ => {
+                todo!()
+            }
+        }
+
+        Token::Identifier
     }
 }
 
@@ -206,6 +218,6 @@ enum Token {
     Keyword(String),
     Symbol(String),
     Identifier,
-    IntConst,
-    StringConst,
+    IntConst(String),
+    StringConst(String),
 }
