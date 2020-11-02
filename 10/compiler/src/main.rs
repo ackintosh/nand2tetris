@@ -18,8 +18,7 @@ fn main() {
     Analyzer::run(path);
 }
 
-struct Analyzer {
-}
+struct Analyzer {}
 
 impl Analyzer {
     fn run(source: &Path) {

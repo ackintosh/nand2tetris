@@ -46,7 +46,7 @@ impl Class {
         let class_name = ClassName::extract(&mut iter)?;
 
         // `{`
-        expect_symbol("{", iter.next().unwrap())?;
+        let _ = expect_symbol("{", iter.next().unwrap())?;
 
         // classVarDec*
         let class_var_decs = Self::compile_class_var_dec(&mut iter);
@@ -97,7 +97,7 @@ impl Class {
             let var_names = VarName::extract_var_names(&mut iter).unwrap();
 
             // ClassVarDecの宣言はセミコロンで終わる
-            expect_symbol(";", iter.next().unwrap()).unwrap();
+            let _ = expect_symbol(";", iter.next().unwrap()).unwrap();
 
             class_var_decs.push(ClassVarDec {
                 dec: dec.into(),
@@ -135,11 +135,11 @@ impl Class {
 
             let subroutine_name = SubroutineName::new(iter.next().unwrap()).unwrap();
 
-            expect_symbol("(", iter.next().unwrap()).unwrap();
+            let _ = expect_symbol("(", iter.next().unwrap()).unwrap();
 
             let parameter_list = ParameterList::extract(&mut iter).unwrap();
 
-            expect_symbol(")", iter.next().unwrap()).unwrap();
+            let _ = expect_symbol(")", iter.next().unwrap()).unwrap();
 
             let subroutine_body = SubroutineBody::extract(&mut iter).unwrap();
 
@@ -204,13 +204,13 @@ struct SubroutineBody {
 
 impl SubroutineBody {
     fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
-        expect_symbol("{", iter.next().unwrap());
+        let _ = expect_symbol("{", iter.next().unwrap());
 
         let var_decs = VarDec::extract_var_decs(&mut iter)?;
 
         let statements = Statements::extract(&mut iter)?;
 
-        // expect_symbol("}", iter.next().unwrap());
+        expect_symbol("}", iter.next().unwrap());
 
         Ok(Self {
             var_decs,
@@ -285,12 +285,12 @@ impl ClassName {
 // identifier
 /////////////////////////////////////////////////////////////
 #[derive(Debug)]
-struct SubroutineName {
+pub struct SubroutineName {
     inner: Token,
 }
 
 impl SubroutineName {
-    fn new(token: &Token) -> Result<Self, String> {
+    pub fn new(token: &Token) -> Result<Self, String> {
         match token {
             Token::Identifier(_) => Ok(Self { inner: token.into() }),
             _ => Err("invalid SubroutineName".into())
@@ -303,12 +303,12 @@ impl SubroutineName {
 // identifier
 /////////////////////////////////////////////////////////////
 #[derive(Debug)]
-struct VarName {
+pub struct VarName {
     inner: Token,
 }
 
 impl VarName {
-    fn new(token: &Token) -> Result<Self, String> {
+    pub fn new(token: &Token) -> Result<Self, String> {
         match token {
             Token::Identifier(_) => Ok(Self { inner: token.into() }),
             _ => Err("invalid VarName".into())
@@ -407,7 +407,7 @@ impl ParameterList {
                 }
             }
 
-            expect_symbol(",", iter.next().unwrap());
+            let _ = expect_symbol(",", iter.next().unwrap());
             list.push(
                 Parameter::new(
                     iter.next().unwrap(),
