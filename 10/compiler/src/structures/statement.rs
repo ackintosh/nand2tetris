@@ -42,7 +42,9 @@ impl Statements {
 
                     statements.push(statement);
                 }
-                _ => { break; }
+                other => {
+                    break;
+                }
             }
         }
 
@@ -189,6 +191,7 @@ impl DoStatement {
     fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
         let token = iter.next().unwrap();
         let subroutine_call = SubroutineCall::extract_with_first_token(token, iter)?;
+        let _ = expect_symbol(";", iter.next().unwrap())?;
         Ok(Self { subroutine_call })
     }
 }
@@ -208,7 +211,6 @@ impl ReturnStatement {
             match iter.peek().unwrap() {
                 Token::Symbol(symbol) => {
                     if symbol == ";" {
-                        let _ = iter.next().unwrap();
                         None
                     } else {
                         Some(Expression::extract(iter)?)
@@ -217,6 +219,7 @@ impl ReturnStatement {
                 _ => Some(Expression::extract(iter)?)
             }
         };
+        let _ = expect_symbol(";", iter.next().unwrap())?;
         Ok(Self { expression })
     }
 }

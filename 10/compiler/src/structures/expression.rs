@@ -100,6 +100,7 @@ impl Term {
                     Token::Symbol(symbol) => {
                         if symbol == "[" {
                             let var_name = VarName::new(token)?;
+                            let _ = expect_symbol("[", iter.next().unwrap())?;
                             let expression = Expression::extract(iter)?;
                             let _ = expect_symbol("]", iter.next().unwrap())?;
                             Term::VarNameWithExpression(var_name, expression)
@@ -123,7 +124,7 @@ impl Term {
                 } else if UNARY_OP.contains(&symbol.as_str()) {
                     Term::UnaryOp(token.into(), Box::new(Term::extract(iter)?))
                 } else {
-                    return Err("invalid symbol as term".into());
+                    return Err(format!("invalid symbol as term: {}", symbol).into());
                 }
             }
         })
@@ -145,8 +146,8 @@ impl SubroutineCall {
     pub fn extract_with_first_token(token: &Token, mut iter: &mut Peekable<Iter<Token>>) -> Result<SubroutineCall, String> {
         let next = iter.peek().unwrap();
         match next {
-            Token::Keyword(keyword) => {
-                if keyword == "(" {
+            Token::Symbol(symbol) => {
+                if symbol == "(" {
                     expect_symbol("(", iter.next().unwrap())?;
                     let expression_list = ExpressionList::extract(iter)?;
                     expect_symbol(")", iter.next().unwrap())?;
@@ -154,7 +155,7 @@ impl SubroutineCall {
                         token.into(),
                         expression_list
                     ))
-                } else if keyword == "." {
+                } else if symbol == "." {
                     expect_symbol(".", iter.next().unwrap())?;
                     let subroutine_name = SubroutineName::new(iter.next().unwrap())?;
                     expect_symbol("(", iter.next().unwrap())?;
@@ -180,28 +181,50 @@ impl SubroutineCall {
 /////////////////////////////////////////////////////////////
 #[derive(Debug)]
 struct ExpressionList {
-    expressions: Vec<Expression>,
+    expressions: Option<Vec<Expression>>,
 }
 
 impl ExpressionList {
     fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
-        let mut expressions = vec![];
-        expressions.push(Expression::extract(iter)?);
+        let expressions = {
+            if Self::should_extract_expression(iter) {
+                let mut expressions = vec![];
+                expressions.push(Expression::extract(iter)?);
 
-        loop {
-            match iter.peek().unwrap() {
-                Token::Keyword(keyword) => {
-                    if keyword != "," {
-                        break;
+                loop {
+                    match iter.peek().unwrap() {
+                        Token::Symbol(symbol) => {
+                            if symbol != "," {
+                                break;
+                            }
+                        }
+                        _ => { break; }
                     }
-                }
-                _ => { break; }
-            }
 
-            let _ = iter.next().unwrap();
-            expressions.push(Expression::extract(iter)?);
-        }
+                    let _ = iter.next().unwrap();
+                    expressions.push(Expression::extract(iter)?);
+                }
+
+                Some(expressions)
+            } else {
+                None
+            }
+        };
 
         Ok(Self { expressions })
+    }
+
+    fn should_extract_expression(mut iter: &mut Peekable<Iter<Token>>) -> bool {
+        match iter.peek().unwrap() {
+            Token::Symbol(symbol) => {
+                if symbol == ")" {
+                    // expression無し
+                    false
+                } else {
+                    true
+                }
+            }
+            _ => true,
+        }
     }
 }

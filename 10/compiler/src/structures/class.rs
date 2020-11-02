@@ -57,11 +57,11 @@ impl Class {
         println!("subroutine_decs: {:?}", subroutine_decs);
 
         // `}`
+        let _ = expect_symbol("}", iter.next().unwrap())?;
 
-        let t = iter.peek().unwrap();
-        println!("compile iter.peek(): {:?}", t);
-        let t = iter.next().unwrap();
-        println!("compile iter.next(): {:?}", t);
+        while let Some(token) = iter.next() {
+            println!("Remaining token: {:?}", token);
+        }
 
         Ok(Class{
             class_name,
@@ -181,13 +181,13 @@ impl Type {
         match token {
             Token::Keyword(k) => {
                 if !CLASS_VAR_DEC_TYPE_KEYWORD.contains(&k.as_str()) {
-                    return Err("invalid Type".into())
+                    return Err(format!("invalid Type: {}", k).into())
                 }
 
                 Ok(Self { inner: token.into() })
             }
             Token::Identifier(_) => Ok(Self { inner: token.into() }),
-            _ => Err("invalid Type".into())
+            other => Err(format!("invalid Type: {:?}", other).into())
         }
     }
 }
@@ -210,7 +210,7 @@ impl SubroutineBody {
 
         let statements = Statements::extract(&mut iter)?;
 
-        expect_symbol("}", iter.next().unwrap());
+        let _ = expect_symbol("}", iter.next().unwrap());
 
         Ok(Self {
             var_decs,
@@ -250,6 +250,7 @@ impl VarDec {
             let _ = iter.next().unwrap();
             let r#type = Type::new(iter.next().unwrap())?;
             let var_names = VarName::extract_var_names(&mut iter)?;
+            let _ = expect_symbol(";", iter.next().unwrap())?;
             var_decs.push(VarDec{
                 r#type,
                 var_names,
@@ -381,42 +382,63 @@ impl SubroutineReturnType {
 /////////////////////////////////////////////////////////////
 #[derive(Debug)]
 struct ParameterList {
-    list: Vec<Parameter>,
+    list: Option<Vec<Parameter>>,
 }
 
 impl ParameterList {
     fn extract(iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
-        let mut list = vec![];
-        list.push(
-            Parameter::new(
-                iter.next().unwrap(),
-                iter.next().unwrap()
-            )?
-        );
+        let list = {
+            if Self::should_extract(iter) {
+                let mut list = vec![];
+                list.push(
+                    Parameter::new(
+                        iter.next().unwrap(),
+                        iter.next().unwrap()
+                    )?
+                );
 
-        loop {
-            // 先読みしてパラメータの宣言が続くかどうかを判定する
-            match iter.peek().unwrap() {
-                Token::Symbol(symbol) => {
-                    if symbol != "," {
-                        break;
+                loop {
+                    // 先読みしてパラメータの宣言が続くかどうかを判定する
+                    match iter.peek().unwrap() {
+                        Token::Symbol(symbol) => {
+                            if symbol != "," {
+                                break;
+                            }
+                        }
+                        _ => {
+                            break;
+                        }
                     }
-                }
-                _ => {
-                    break;
-                }
-            }
 
-            let _ = expect_symbol(",", iter.next().unwrap());
-            list.push(
-                Parameter::new(
-                    iter.next().unwrap(),
-                    iter.next().unwrap()
-                )?
-            );
-        }
+                    let _ = expect_symbol(",", iter.next().unwrap());
+                    list.push(
+                        Parameter::new(
+                            iter.next().unwrap(),
+                            iter.next().unwrap()
+                        )?
+                    );
+                }
+
+                Some(list)
+            } else {
+                None
+            }
+        };
 
         Ok(Self { list })
+    }
+
+    fn should_extract(iter: &mut Peekable<Iter<Token>>) -> bool {
+        match iter.peek().unwrap() {
+            Token::Symbol(symbol) => {
+                if symbol == ")" {
+                    false
+                } else {
+                    true
+                }
+            }
+            _ => true
+        }
     }
 }
 
