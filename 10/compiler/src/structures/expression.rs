@@ -4,18 +4,59 @@ use crate::tokenizer::Token;
 use crate::structures::class::{VarName, SubroutineName};
 use crate::compilation_engine::expect_symbol;
 
+const OP: [&str; 9] = [
+    "+",
+    "-",
+    "*",
+    "/",
+    "&",
+    "|",
+    "<",
+    ">",
+    "=",
+];
+const UNARY_OP: [&str; 2] = [
+    "-",
+    "~",
+];
+const KEYWORD_CONSTANT: [&str; 4] = [
+    "true",
+    "false",
+    "null",
+    "this",
+];
+
 /////////////////////////////////////////////////////////////
 // expressionの構文
 // term (op term)*
 /////////////////////////////////////////////////////////////
 #[derive(Debug)]
 pub struct Expression {
+    term: Box<Term>, // 再帰構造なのでBoxで包む
+    op_terms: Vec<(Token, Term)>
 }
 
 impl Expression {
     pub fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+        let term = Term::extract(iter)?;
+        let mut op_terms = vec![];
 
-        Ok(Self {})
+        loop {
+            match iter.peek().unwrap() {
+                Token::Symbol(symbol) => {
+                    if !OP.contains(&symbol.as_str()) {
+                        break;
+                    }
+                }
+                _ => { break; }
+            }
+
+            let op = iter.next().unwrap();
+            let term = Term::extract(iter)?;
+            op_terms.push((op.into(), term));
+        }
+
+        Ok(Self { term: Box::new(term), op_terms })
     }
 }
 
@@ -28,7 +69,8 @@ impl Expression {
 // | `(` expression `)`
 // | unaryOp term
 /////////////////////////////////////////////////////////////
-enum  Term {
+#[derive(Debug)]
+enum Term {
     IntegerConstant(Token),
     StringConstant(Token),
     KeywordConstant(Token),
@@ -36,6 +78,7 @@ enum  Term {
     VarNameWithExpression(VarName, Expression),
     SubroutineCall(SubroutineCall),
     Expression(Expression),
+    UnaryOp(Token, Box<Term>), // 再帰構造なのでBoxで包む
 }
 
 impl Term {
@@ -44,7 +87,13 @@ impl Term {
         Ok(match token {
             Token::IntegerConst(_) => Term::IntegerConstant(token.into()),
             Token::StringConst(_) => Term::StringConstant(token.into()),
-            Token::Keyword(_) => Term::KeywordConstant(token.into()),
+            Token::Keyword(keyword) => {
+                if KEYWORD_CONSTANT.contains(&keyword.as_str()) {
+                    Term::KeywordConstant(token.into())
+                } else {
+                    return Err("invalid keyword".into())
+                }
+            },
             Token::Identifier(_) => {
                 let next = iter.peek().unwrap();
                 match next {
@@ -71,8 +120,10 @@ impl Term {
                     let expression = Expression::extract(iter)?;
                     let _ = expect_symbol(")", iter.next().unwrap())?;
                     Term::Expression(expression)
-                } else if symbol == "TODO" {
-                    // TODO
+                } else if UNARY_OP.contains(&symbol.as_str()) {
+                    Term::UnaryOp(token.into(), Box::new(Term::extract(iter)?))
+                } else {
+                    return Err("invalid symbol as term".into());
                 }
             }
         })
@@ -84,13 +135,14 @@ impl Term {
 // subroutineName `(` expressionList `)`
 // | (className | varName) `.` subroutineName `(` expressionList `)`
 /////////////////////////////////////////////////////////////
-enum SubroutineCall {
+#[derive(Debug)]
+pub enum SubroutineCall {
     Subroutine(Token, ExpressionList),
     Method(Token, SubroutineName, ExpressionList),
 }
 
 impl SubroutineCall {
-    fn extract_with_first_token(token: &Token, mut iter: &mut Peekable<Iter<Token>>) -> Result<SubroutineCall, String> {
+    pub fn extract_with_first_token(token: &Token, mut iter: &mut Peekable<Iter<Token>>) -> Result<SubroutineCall, String> {
         let next = iter.peek().unwrap();
         match next {
             Token::Keyword(keyword) => {
@@ -117,7 +169,7 @@ impl SubroutineCall {
                     Err("invalid keyword".into())
                 }
             }
-            _ => Err("invalid subroutine call".into())
+            _ => Err(format!("invalid subroutine call: {:?}", next).into())
         }
     }
 }
