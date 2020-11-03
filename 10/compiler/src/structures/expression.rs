@@ -164,7 +164,11 @@ impl Xml for Term {
                 xml.push_str(expression.xml().as_str());
             }
             Self::SubroutineCall(subroutine_call) => xml.push_str(subroutine_call.xml().as_str()),
-            Self::Expression(expression) => xml.push_str(expression.xml().as_str()),
+            Self::Expression(expression) => {
+                xml.push_str(Token::Symbol("(".into()).xml().as_str());
+                xml.push_str(expression.xml().as_str());
+                xml.push_str(Token::Symbol(")".into()).xml().as_str());
+            },
             Self::UnaryOp(token, term) => {
                 xml.push_str(token.xml().as_str());
                 xml.push_str(term.xml().as_str());
