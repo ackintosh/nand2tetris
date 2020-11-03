@@ -3,6 +3,7 @@ use std::slice::Iter;
 use crate::tokenizer::Token;
 use crate::structures::class::{VarName, SubroutineName};
 use crate::compilation_engine::expect_symbol;
+use crate::Xml;
 
 const OP: [&str; 9] = [
     "+",
@@ -60,6 +61,23 @@ impl Expression {
     }
 }
 
+impl Xml for Expression {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<expression>\n");
+
+        xml.push_str(self.term.xml().as_str());
+
+        for (token, term) in &self.op_terms {
+            xml.push_str(token.xml().as_str());
+            xml.push_str(term.xml().as_str());
+        }
+
+        xml.push_str("</expression>\n");
+        xml
+    }
+}
+
 /////////////////////////////////////////////////////////////
 // termの構文
 // integerConstant | stringConstant | keywordConstant
@@ -71,8 +89,8 @@ impl Expression {
 /////////////////////////////////////////////////////////////
 #[derive(Debug)]
 enum Term {
-    IntegerConstant(Token),
-    StringConstant(Token),
+    IntegerConstant(String),
+    StringConstant(String),
     KeywordConstant(Token),
     VarName(VarName),
     VarNameWithExpression(VarName, Expression),
@@ -85,8 +103,8 @@ impl Term {
     fn extract(iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
         let token = iter.next().unwrap();
         Ok(match token {
-            Token::IntegerConst(_) => Term::IntegerConstant(token.into()),
-            Token::StringConst(_) => Term::StringConstant(token.into()),
+            Token::IntegerConst(integer) => Term::IntegerConstant(integer.into()),
+            Token::StringConst(string) => Term::StringConstant(string.into()),
             Token::Keyword(keyword) => {
                 if KEYWORD_CONSTANT.contains(&keyword.as_str()) {
                     Term::KeywordConstant(token.into())
@@ -131,6 +149,33 @@ impl Term {
     }
 }
 
+impl Xml for Term {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<term>\n");
+
+        match self {
+            Self::IntegerConstant(integer) => xml.push_str(format!("<integerConstant>{}</integerConstant>\n", integer).as_str()),
+            Self::StringConstant(string) => xml.push_str(format!("<stringConstant>{}</stringConstant>\n", string).as_str()),
+            Self::KeywordConstant(token) => xml.push_str(token.xml().as_str()),
+            Self::VarName(var_name) => xml.push_str(var_name.xml().as_str()),
+            Self::VarNameWithExpression(var_name, expression) => {
+                xml.push_str(var_name.xml().as_str());
+                xml.push_str(expression.xml().as_str());
+            }
+            Self::SubroutineCall(subroutine_call) => xml.push_str(subroutine_call.xml().as_str()),
+            Self::Expression(expression) => xml.push_str(expression.xml().as_str()),
+            Self::UnaryOp(token, term) => {
+                xml.push_str(token.xml().as_str());
+                xml.push_str(term.xml().as_str());
+            }
+        }
+
+        xml.push_str("</term>\n");
+        xml
+    }
+}
+
 /////////////////////////////////////////////////////////////
 // subroutineCallの構文
 // subroutineName `(` expressionList `)`
@@ -172,6 +217,31 @@ impl SubroutineCall {
             }
             _ => Err(format!("invalid subroutine call: {:?}", next).into())
         }
+    }
+}
+
+impl Xml for SubroutineCall {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+
+        match self {
+            Self::Subroutine(token, expression_list) => {
+                xml.push_str(token.xml().as_str());
+                xml.push_str(Token::Symbol("(".into()).xml().as_str());
+                xml.push_str(expression_list.xml().as_str());
+                xml.push_str(Token::Symbol(")".into()).xml().as_str());
+            }
+            Self::Method(token, subroutine_name, expression_list) => {
+                xml.push_str(token.xml().as_str());
+                xml.push_str(Token::Symbol(".".into()).xml().as_str());
+                xml.push_str(subroutine_name.xml().as_str());
+                xml.push_str(Token::Symbol("(".into()).xml().as_str());
+                xml.push_str(expression_list.xml().as_str());
+                xml.push_str(Token::Symbol(")".into()).xml().as_str());
+            }
+        }
+
+        xml
     }
 }
 
@@ -226,5 +296,24 @@ impl ExpressionList {
             }
             _ => true,
         }
+    }
+}
+
+impl Xml for ExpressionList {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<expressionList>\n");
+
+        if let Some(expressions) = &self.expressions {
+            for (i, expression) in expressions.iter().enumerate() {
+                if i > 0 {
+                    xml.push_str(Token::Symbol(",".into()).xml().as_str());
+                }
+                xml.push_str(expression.xml().as_str());
+            }
+        }
+
+        xml.push_str("</expressionList>\n");
+        xml
     }
 }

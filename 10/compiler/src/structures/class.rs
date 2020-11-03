@@ -3,6 +3,7 @@ use std::iter::Peekable;
 use std::slice::Iter;
 use crate::compilation_engine::expect_symbol;
 use crate::structures::Statements;
+use crate::Xml;
 
 const CLASS_KEYWORD: &str = "class";
 const CLASS_VAR_DEC_KEYWORD: [&str; 2] = [
@@ -71,13 +72,36 @@ impl Class {
     }
 }
 
+impl Xml for Class {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<class>\n");
+
+        xml.push_str(Token::Keyword("class".into()).xml().as_str());
+        xml.push_str(self.class_name.xml().as_str());
+        xml.push_str(Token::Symbol("{".into()).xml().as_str());
+
+        for decs in &self.class_var_decs {
+            xml.push_str(decs.xml().as_str());
+        }
+
+        for decs in &self.subroutine_decs {
+            xml.push_str(decs.xml().as_str());
+        }
+
+        xml.push_str(Token::Symbol("}".into()).xml().as_str());
+        xml.push_str("</class>\n");
+        xml
+    }
+}
+
 /////////////////////////////////////////////////////////////
 // classVarDecの構文
 // (`static` | `field`) type varName (`,` varName)* `;`
 /////////////////////////////////////////////////////////////
 #[derive(Debug)]
 struct ClassVarDec {
-    dec: Token,
+    dec_keyword: Token,
     r#type: Type,
     var_names: Vec<VarName>,
 }
@@ -92,7 +116,7 @@ impl ClassVarDec {
         let _ = expect_symbol(";", iter.next().unwrap())?;
 
         Ok(Self {
-            dec: dec.into(),
+            dec_keyword: dec.into(),
             r#type: class_var_dec_type,
             var_names,
         })
@@ -125,6 +149,19 @@ impl ClassVarDec {
     }
 }
 
+impl Xml for ClassVarDec {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<classVarDec>\n");
+        xml.push_str(self.dec_keyword.xml().as_str());
+        xml.push_str(self.r#type.xml().as_str());
+        xml.push_str(self.var_names.xml().as_str());
+        xml.push_str(Token::Symbol(";".into()).xml().as_str());
+        xml.push_str("</classVarDec>\n");
+        xml
+    }
+}
+
 /////////////////////////////////////////////////////////////
 // typeの構文
 // `int` | `char` | `boolean` | className
@@ -147,6 +184,12 @@ impl Type {
             Token::Identifier(_) => Ok(Self { inner: token.into() }),
             other => Err(format!("invalid Type: {:?}", other).into())
         }
+    }
+}
+
+impl Xml for Type {
+    fn xml(&self) -> String {
+        self.inner.xml()
     }
 }
 
@@ -174,6 +217,24 @@ impl SubroutineBody {
             var_decs,
             statements,
         })
+    }
+}
+
+impl Xml for SubroutineBody {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<subroutineBody>\n");
+        xml.push_str(Token::Symbol("{".into()).xml().as_str());
+
+        for var_dec in &self.var_decs {
+            xml.push_str(var_dec.xml().as_str());
+        }
+
+        xml.push_str(self.statements.xml().as_str());
+
+        xml.push_str(Token::Symbol("}".into()).xml().as_str());
+        xml.push_str("</subroutineBody>\n");
+        xml
     }
 }
 
@@ -219,6 +280,17 @@ impl VarDec {
     }
 }
 
+impl Xml for VarDec {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str(Token::Keyword("var".into()).xml().as_str());
+        xml.push_str(self.r#type.xml().as_str());
+        xml.push_str(self.var_names.xml().as_str());
+        xml.push_str(Token::Symbol(";".into()).xml().as_str());
+        xml
+    }
+}
+
 /////////////////////////////////////////////////////////////
 // classNameの構文
 // identifier
@@ -239,6 +311,12 @@ impl ClassName {
     }
 }
 
+impl Xml for ClassName {
+    fn xml(&self) -> String {
+        self.inner.xml()
+    }
+}
+
 /////////////////////////////////////////////////////////////
 // subroutineNameの構文
 // identifier
@@ -254,6 +332,12 @@ impl SubroutineName {
             Token::Identifier(_) => Ok(Self { inner: token.into() }),
             _ => Err("invalid SubroutineName".into())
         }
+    }
+}
+
+impl Xml for SubroutineName {
+    fn xml(&self) -> String {
+        self.inner.xml()
     }
 }
 
@@ -298,13 +382,33 @@ impl VarName {
     }
 }
 
+impl Xml for VarName {
+    fn xml(&self) -> String {
+        self.inner.xml()
+    }
+}
+
+impl Xml for Vec<VarName> {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        for (i, var_name) in self.iter().enumerate() {
+            if i > 0 {
+                xml.push_str(Token::Symbol(",".into()).xml().as_str());
+            }
+            xml.push_str(var_name.xml().as_str());
+        }
+
+        xml
+    }
+}
+
 /////////////////////////////////////////////////////////////
 // subroutineDecの構文
 // (`constructor` | `function` | `method`) (`void` | type) subroutineName `(` parameterList `)` subroutineBody
 /////////////////////////////////////////////////////////////
 #[derive(Debug)]
 struct SubroutineDec {
-    dec: Token,
+    dec_keyword: Token,
     return_type: SubroutineReturnType,
     subroutine_name: SubroutineName,
     parameter_list: ParameterList,
@@ -322,7 +426,7 @@ impl SubroutineDec {
         let subroutine_body = SubroutineBody::extract(&mut iter)?;
 
         Ok(Self {
-            dec: dec.into(),
+            dec_keyword: dec.into(),
             return_type,
             subroutine_name,
             parameter_list,
@@ -358,6 +462,23 @@ impl SubroutineDec {
     }
 }
 
+impl Xml for SubroutineDec {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<subroutineDec>\n");
+        xml.push_str(self.dec_keyword.xml().as_str());
+        xml.push_str(self.return_type.xml().as_str());
+        xml.push_str(self.subroutine_name.xml().as_str());
+        xml.push_str(Token::Symbol("(".into()).xml().as_str());
+        xml.push_str(self.parameter_list.xml().as_str());
+        xml.push_str(Token::Symbol(")".into()).xml().as_str());
+
+        xml.push_str(self.subroutine_body.xml().as_str());
+        xml.push_str("</subroutineDec>\n");
+        xml
+    }
+}
+
 #[derive(Debug)]
 enum SubroutineReturnType {
     Void(Token),
@@ -377,6 +498,15 @@ impl SubroutineReturnType {
             _ => {
                 Ok(SubroutineReturnType::Type(Type::new(token)?))
             }
+        }
+    }
+}
+
+impl Xml for SubroutineReturnType {
+    fn xml(&self) -> String {
+        match self {
+            Self::Void(token) => token.xml(),
+            Self::Type(r#type) => r#type.xml(),
         }
     }
 }
@@ -447,6 +577,25 @@ impl ParameterList {
     }
 }
 
+impl Xml for ParameterList {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<parameterList>\n");
+
+        if let Some(list) = &self.list {
+            for (i, param) in list.iter().enumerate() {
+                if i > 0 {
+                    xml.push_str(Token::Symbol(",".into()).xml().as_str());
+                }
+                xml.push_str(param.xml().as_str());
+            }
+        }
+
+        xml.push_str("</parameterList>\n");
+        xml
+    }
+}
+
 #[derive(Debug)]
 struct Parameter {
     r#type: Type,
@@ -462,5 +611,14 @@ impl Parameter {
             r#type,
             var_name,
         })
+    }
+}
+
+impl Xml for Parameter {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str(self.r#type.xml().as_str());
+        xml.push_str(self.var_name.xml().as_str());
+        xml
     }
 }

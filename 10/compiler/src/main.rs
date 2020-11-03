@@ -31,17 +31,23 @@ impl Analyzer {
         println!("jack_files: {:?}", jack_files);
 
         for jack_file in jack_files {
-            let f = std::fs::File::open(jack_file.clone()).expect(format!("failed to open .jack file: {:?}", jack_file).as_str());
-            let mut tokenizer = Tokenizer::new(f);
-            let tokens = tokenizer.generate_tokens();
-
             let (destination, destination_token) = Self::source_to_destinations(&jack_file);
             println!("destination: {:?}", destination);
             println!("destination_token: {:?}", destination_token);
 
+            /////////////////////////////////////
+            // 字句解析
+            /////////////////////////////////////
+            let f = std::fs::File::open(jack_file.clone()).expect(format!("failed to open .jack file: {:?}", jack_file).as_str());
+            let mut tokenizer = Tokenizer::new(f);
+            let tokens = tokenizer.generate_tokens();
             save(destination_token, &tokens);
 
-            let _class = CompilationEngine::compile(tokens);
+            /////////////////////////////////////
+            // 構文解析
+            /////////////////////////////////////
+            let class = CompilationEngine::compile(tokens).unwrap();
+            save(destination, class);
         }
     }
 

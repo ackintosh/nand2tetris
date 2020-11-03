@@ -4,6 +4,7 @@ use crate::tokenizer::Token;
 use crate::structures::class::VarName;
 use crate::compilation_engine::expect_symbol;
 use crate::structures::expression::{Expression, SubroutineCall};
+use crate::Xml;
 
 const STATEMENT_DEC: [&str; 5] = [
     "let",
@@ -13,6 +14,10 @@ const STATEMENT_DEC: [&str; 5] = [
     "return",
 ];
 
+/////////////////////////////////////////////////////////////
+// statementsの構文
+// statement*
+/////////////////////////////////////////////////////////////
 #[derive(Debug)]
 pub struct Statements {
     statements: Vec<Statement>
@@ -50,7 +55,20 @@ impl Statements {
             statements,
         })
     }
+}
 
+impl Xml for Statements {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<statements>\n");
+
+        for s in &self.statements {
+            xml.push_str(s.xml().as_str());
+        }
+
+        xml.push_str("</statements>\n");
+        xml
+    }
 }
 
 /////////////////////////////////////////////////////////////
@@ -64,6 +82,18 @@ enum Statement {
     While(WhileStatement),
     Do(DoStatement),
     Return(ReturnStatement),
+}
+
+impl Xml for Statement {
+    fn xml(&self) -> String {
+        match self {
+            Self::Let(s) => s.xml(),
+            Self::If(s) => s.xml(),
+            Self::While(s) => s.xml(),
+            Self::Do(s) => s.xml(),
+            Self::Return(s) => s.xml(),
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////
@@ -106,6 +136,27 @@ impl LetStatement {
             expression_for_bracket,
             expression,
         })
+    }
+}
+
+impl Xml for LetStatement {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<letStatement>\n");
+        xml.push_str(Token::Keyword("let".into()).xml().as_str());
+        xml.push_str(self.var_name.xml().as_str());
+
+        if let Some(expression) = &self.expression_for_bracket {
+            xml.push_str(Token::Symbol("[".into()).xml().as_str());
+            xml.push_str(expression.xml().as_str());
+            xml.push_str(Token::Symbol("]".into()).xml().as_str());
+        }
+
+        xml.push_str(Token::Symbol("=".into()).xml().as_str());
+        xml.push_str(self.expression.xml().as_str());
+        xml.push_str(Token::Symbol(";".into()).xml().as_str());
+        xml.push_str("</letStatement>\n");
+        xml
     }
 }
 
@@ -153,6 +204,32 @@ impl IfStatement {
         })
     }
 }
+
+impl Xml for IfStatement {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<ifStatement>\n");
+        xml.push_str(Token::Keyword("if".into()).xml().as_str());
+        xml.push_str(Token::Symbol("(".into()).xml().as_str());
+        xml.push_str(self.expression.xml().as_str());
+        xml.push_str(Token::Symbol(")".into()).xml().as_str());
+
+        xml.push_str(Token::Symbol("{".into()).xml().as_str());
+        xml.push_str(self.statements.xml().as_str());
+        xml.push_str(Token::Symbol("}".into()).xml().as_str());
+
+        if let Some(else_statements) = &self.else_statements {
+            xml.push_str(Token::Keyword("else".into()).xml().as_str());
+            xml.push_str(Token::Symbol("{".into()).xml().as_str());
+            xml.push_str(else_statements.xml().as_str());
+            xml.push_str(Token::Symbol("}".into()).xml().as_str());
+        }
+
+        xml.push_str("</ifStatement>\n");
+        xml
+    }
+}
+
 /////////////////////////////////////////////////////////////
 // whileStatementの構文
 // `while` `(` expression `)` `{` statements `}`
@@ -176,6 +253,22 @@ impl WhileStatement {
     }
 }
 
+impl Xml for WhileStatement {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<whileStatement>\n");
+        xml.push_str(Token::Keyword("while".into()).xml().as_str());
+        xml.push_str(Token::Symbol("(".into()).xml().as_str());
+        xml.push_str(self.expression.xml().as_str());
+        xml.push_str(Token::Symbol(")".into()).xml().as_str());
+        xml.push_str(Token::Symbol("{".into()).xml().as_str());
+        xml.push_str(self.statements.xml().as_str());
+        xml.push_str(Token::Symbol("}".into()).xml().as_str());
+        xml.push_str("</whileStatement>\n");
+        xml
+    }
+}
+
 /////////////////////////////////////////////////////////////
 // doStatementの構文
 // `do` subroutineCall `;`
@@ -191,6 +284,18 @@ impl DoStatement {
         let subroutine_call = SubroutineCall::extract_with_first_token(token, iter)?;
         let _ = expect_symbol(";", iter.next().unwrap())?;
         Ok(Self { subroutine_call })
+    }
+}
+
+impl Xml for DoStatement {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<doStatement>\n");
+        xml.push_str(Token::Keyword("do".into()).xml().as_str());
+        xml.push_str(self.subroutine_call.xml().as_str());
+        xml.push_str(Token::Symbol(";".into()).xml().as_str());
+        xml.push_str("</doStatement>\n");
+        xml
     }
 }
 
@@ -219,5 +324,21 @@ impl ReturnStatement {
         };
         let _ = expect_symbol(";", iter.next().unwrap())?;
         Ok(Self { expression })
+    }
+}
+
+impl Xml for ReturnStatement {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<returnStatement>\n");
+        xml.push_str(Token::Keyword("return".into()).xml().as_str());
+
+        if let Some(expression) = &self.expression {
+            xml.push_str(expression.xml().as_str());
+        }
+
+        xml.push_str(Token::Symbol(";".into()).xml().as_str());
+        xml.push_str("</returnStatement>\n");
+        xml
     }
 }
