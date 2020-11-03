@@ -72,10 +72,7 @@ impl Analyzer {
 
         let mut dest_token = dest.clone();
         dest_token = {
-            let file_stem = {
-                let file_stem = dest_token.file_stem().unwrap();
-                file_stem.to_os_string()
-            };
+            let file_stem = dest_token.file_stem().unwrap().to_os_string();
             dest_token.pop();
             dest_token.join(Path::new(format!("{}T.xml", file_stem.to_str().unwrap()).as_str()))
         };
