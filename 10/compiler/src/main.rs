@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 use std::io::{Error, BufWriter, Write};
 use std::fs::File;
 use crate::compilation_engine::CompilationEngine;
-use crate::tokenizer::{Tokenizer, Token};
+use crate::tokenizer::Tokenizer;
 
 mod compilation_engine;
 mod structures;
@@ -89,7 +89,7 @@ fn save<T>(destination: PathBuf, tokens: T) where T: Xml {
     let mut writer = BufWriter::new(
         File::create(destination).expect("failed to create a file")
     );
-    writer.write_all(tokens.xml().as_bytes());
+    writer.write_all(tokens.xml().as_bytes()).unwrap();
 }
 
 fn convert_to_xml_symbol(symbol: &str) -> String {

@@ -49,18 +49,18 @@ impl Class {
         let _ = expect_symbol("{", iter.next().unwrap())?;
 
         // classVarDec*
-        let class_var_decs = Self::compile_class_var_dec(&mut iter);
+        let class_var_decs = ClassVarDec::extract_class_var_decs(iter)?;
         println!("class_var_decs: {:?}", class_var_decs);
 
         // subroutineDec*
-        let subroutine_decs = Self::compile_subroutine_dec(&mut iter);
+        let subroutine_decs = SubroutineDec::extract_subroutine_decs(&mut iter)?;
         println!("subroutine_decs: {:?}", subroutine_decs);
 
         // `}`
         let _ = expect_symbol("}", iter.next().unwrap())?;
 
         while let Some(token) = iter.next() {
-            println!("Remaining token: {:?}", token);
+            println!("!!! Remaining token !!! : {:?}", token);
         }
 
         Ok(Class{
@@ -69,8 +69,36 @@ impl Class {
             subroutine_decs,
         })
     }
+}
 
-    fn compile_class_var_dec(mut iter: &mut Peekable<Iter<Token>>) -> Vec<ClassVarDec> {
+/////////////////////////////////////////////////////////////
+// classVarDecの構文
+// (`static` | `field`) type varName (`,` varName)* `;`
+/////////////////////////////////////////////////////////////
+#[derive(Debug)]
+struct ClassVarDec {
+    dec: Token,
+    r#type: Type,
+    var_names: Vec<VarName>,
+}
+
+impl ClassVarDec {
+    fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+        let dec = iter.next().unwrap();
+        let class_var_dec_type = Type::new(iter.next().unwrap())?;
+        let var_names = VarName::extract_var_names(&mut iter)?;
+
+        // ClassVarDecの宣言はセミコロンで終わる
+        let _ = expect_symbol(";", iter.next().unwrap())?;
+
+        Ok(Self {
+            dec: dec.into(),
+            r#type: class_var_dec_type,
+            var_names,
+        })
+    }
+
+    fn extract_class_var_decs(iter: &mut Peekable<Iter<Token>>) -> Result<Vec<Self>, String> {
         let mut class_var_decs = vec![];
 
         loop {
@@ -90,81 +118,11 @@ impl Class {
                 }
             }
             // 宣言を確認できたのでイテレータから取り出す
-            let dec = iter.next().unwrap();
-
-            let class_var_dec_type = Type::new(iter.next().unwrap()).unwrap();
-
-            let var_names = VarName::extract_var_names(&mut iter).unwrap();
-
-            // ClassVarDecの宣言はセミコロンで終わる
-            let _ = expect_symbol(";", iter.next().unwrap()).unwrap();
-
-            class_var_decs.push(ClassVarDec {
-                dec: dec.into(),
-                r#type: class_var_dec_type,
-                var_names,
-            });
+            class_var_decs.push(Self::extract(iter)?);
         }
 
-        class_var_decs
+        Ok(class_var_decs)
     }
-
-    fn compile_subroutine_dec(mut iter: &mut Peekable<Iter<Token>>) -> Vec<SubroutineDec> {
-        let mut subroutine_decs = vec![];
-
-        loop {
-            // 先読みしてサブルーチンの宣言かどうかを判定する
-            let dec = iter.peek();
-            if dec.is_none() {
-                break;
-            }
-            match dec.unwrap() {
-                Token::Keyword(keyword) => {
-                    if !SUBROUTINE_DEC_KEYWORD.contains(&keyword.as_str()) {
-                        break;
-                    }
-                }
-                _ => {
-                    break;
-                }
-            }
-            // 宣言を確認できたのでイテレータから取り出す
-            let dec = iter.next().unwrap();
-
-            let return_type = SubroutineReturnType::new(iter.next().unwrap()).unwrap();
-
-            let subroutine_name = SubroutineName::new(iter.next().unwrap()).unwrap();
-
-            let _ = expect_symbol("(", iter.next().unwrap()).unwrap();
-
-            let parameter_list = ParameterList::extract(&mut iter).unwrap();
-
-            let _ = expect_symbol(")", iter.next().unwrap()).unwrap();
-
-            let subroutine_body = SubroutineBody::extract(&mut iter).unwrap();
-
-            subroutine_decs.push(SubroutineDec {
-                dec: dec.into(),
-                return_type,
-                subroutine_name,
-                parameter_list,
-                subroutine_body,
-            });
-        }
-
-        subroutine_decs
-    }
-}
-
-/////////////////////////////////////////////////////////////
-// classVarDecの構文
-// (`static` | `field`) type varName (`,` varName)* `;`
-/////////////////////////////////////////////////////////////
-#[derive(Debug)]
-struct ClassVarDec {
-    dec: Token,
-    r#type: Type,
-    var_names: Vec<VarName>,
 }
 
 /////////////////////////////////////////////////////////////
@@ -351,6 +309,53 @@ struct SubroutineDec {
     subroutine_name: SubroutineName,
     parameter_list: ParameterList,
     subroutine_body: SubroutineBody,
+}
+
+impl SubroutineDec {
+    fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+        let dec = iter.next().unwrap();
+        let return_type = SubroutineReturnType::new(iter.next().unwrap())?;
+        let subroutine_name = SubroutineName::new(iter.next().unwrap())?;
+        let _ = expect_symbol("(", iter.next().unwrap())?;
+        let parameter_list = ParameterList::extract(&mut iter)?;
+        let _ = expect_symbol(")", iter.next().unwrap())?;
+        let subroutine_body = SubroutineBody::extract(&mut iter)?;
+
+        Ok(Self {
+            dec: dec.into(),
+            return_type,
+            subroutine_name,
+            parameter_list,
+            subroutine_body,
+        })
+    }
+
+    fn extract_subroutine_decs(iter: &mut Peekable<Iter<Token>>) -> Result<Vec<Self>, String> {
+        let mut subroutine_decs = vec![];
+
+        loop {
+            // 先読みしてサブルーチンの宣言かどうかを判定する
+            let dec = iter.peek();
+            if dec.is_none() {
+                break;
+            }
+            match dec.unwrap() {
+                Token::Keyword(keyword) => {
+                    if !SUBROUTINE_DEC_KEYWORD.contains(&keyword.as_str()) {
+                        break;
+                    }
+                }
+                _ => {
+                    break;
+                }
+            }
+
+            // 宣言を確認できたのでイテレータから取り出す
+            subroutine_decs.push(Self::extract(iter)?);
+        }
+
+        Ok(subroutine_decs)
+    }
 }
 
 #[derive(Debug)]

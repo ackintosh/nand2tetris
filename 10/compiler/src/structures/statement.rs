@@ -42,9 +42,7 @@ impl Statements {
 
                     statements.push(statement);
                 }
-                other => {
-                    break;
-                }
+                _ => { break }
             }
         }
 
@@ -80,7 +78,7 @@ struct LetStatement {
 }
 
 impl LetStatement {
-    fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+    fn extract(iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
         let var_name = VarName::new(iter.next().unwrap())?;
 
         let expression_for_bracket = {
@@ -124,7 +122,7 @@ struct IfStatement {
 }
 
 impl IfStatement {
-    fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+    fn extract(iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
         let _ = expect_symbol("(", iter.next().unwrap());
         let expression = Expression::extract(iter)?;
         let _ = expect_symbol(")", iter.next().unwrap());
@@ -166,7 +164,7 @@ struct WhileStatement {
 }
 
 impl WhileStatement {
-    fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+    fn extract(iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
         let _ = expect_symbol("(", iter.next().unwrap());
         let expression = Expression::extract(iter)?;
         let _ = expect_symbol(")", iter.next().unwrap());
@@ -188,7 +186,7 @@ struct DoStatement {
 }
 
 impl DoStatement {
-    fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+    fn extract(iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
         let token = iter.next().unwrap();
         let subroutine_call = SubroutineCall::extract_with_first_token(token, iter)?;
         let _ = expect_symbol(";", iter.next().unwrap())?;
@@ -206,7 +204,7 @@ struct ReturnStatement {
 }
 
 impl ReturnStatement {
-    fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+    fn extract(iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
         let expression = {
             match iter.peek().unwrap() {
                 Token::Symbol(symbol) => {

@@ -37,7 +37,7 @@ pub struct Expression {
 }
 
 impl Expression {
-    pub fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+    pub fn extract(iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
         let term = Term::extract(iter)?;
         let mut op_terms = vec![];
 
@@ -82,7 +82,7 @@ enum Term {
 }
 
 impl Term {
-    fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+    fn extract(iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
         let token = iter.next().unwrap();
         Ok(match token {
             Token::IntegerConst(_) => Term::IntegerConstant(token.into()),
@@ -143,7 +143,7 @@ pub enum SubroutineCall {
 }
 
 impl SubroutineCall {
-    pub fn extract_with_first_token(token: &Token, mut iter: &mut Peekable<Iter<Token>>) -> Result<SubroutineCall, String> {
+    pub fn extract_with_first_token(token: &Token, iter: &mut Peekable<Iter<Token>>) -> Result<SubroutineCall, String> {
         let next = iter.peek().unwrap();
         match next {
             Token::Symbol(symbol) => {
@@ -180,12 +180,12 @@ impl SubroutineCall {
 // (expression (`,` expression)* )?
 /////////////////////////////////////////////////////////////
 #[derive(Debug)]
-struct ExpressionList {
+pub struct ExpressionList {
     expressions: Option<Vec<Expression>>,
 }
 
 impl ExpressionList {
-    fn extract(mut iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
+    fn extract(iter: &mut Peekable<Iter<Token>>) -> Result<Self, String> {
         let expressions = {
             if Self::should_extract_expression(iter) {
                 let mut expressions = vec![];
@@ -214,7 +214,7 @@ impl ExpressionList {
         Ok(Self { expressions })
     }
 
-    fn should_extract_expression(mut iter: &mut Peekable<Iter<Token>>) -> bool {
+    fn should_extract_expression(iter: &mut Peekable<Iter<Token>>) -> bool {
         match iter.peek().unwrap() {
             Token::Symbol(symbol) => {
                 if symbol == ")" {
