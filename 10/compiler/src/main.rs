@@ -35,7 +35,7 @@ impl Analyzer {
             let mut tokenizer = Tokenizer::new(f);
             let tokens = tokenizer.generate_tokens();
 
-            let (destination, destination_token) = Self::source_to_destination(&jack_file);
+            let (destination, destination_token) = Self::source_to_destinations(&jack_file);
             println!("destination: {:?}", destination);
             println!("destination_token: {:?}", destination_token);
 
@@ -66,7 +66,7 @@ impl Analyzer {
         }
     }
 
-    fn source_to_destination(path: &PathBuf) -> (PathBuf, PathBuf) {
+    fn source_to_destinations(path: &PathBuf) -> (PathBuf, PathBuf) {
         let mut  dest = path.clone();
         dest.set_extension("xml");
 
@@ -84,19 +84,15 @@ impl Analyzer {
     }
 }
 
-fn save(destination: PathBuf, tokens: &Vec<Token>) {
-    let mut writer = BufWriter::new(File::create(destination).expect("failed to create a file"));
-    writer.write_all(b"<tokens>\n");
-    for token in tokens {
-        match token {
-            Token::Keyword(keyword) => writer.write_all(format!("<keyword>{}</keyword>\n", keyword).as_bytes()),
-            Token::Symbol(symbol) => writer.write_all(format!("<symbol>{}</symbol>\n", convert_to_xml_symbol(&symbol)).as_bytes()),
-            Token::Identifier(identifier) => writer.write_all(format!("<identifier>{}</identifier>\n", identifier).as_bytes()),
-            Token::IntegerConst(integer_const) => writer.write_all(format!("<integerConstant>{}</integerConstant>\n", integer_const).as_bytes()),
-            Token::StringConst(string_const) => writer.write_all(format!("<stringConstant>{}</stringConstant>\n", string_const).as_bytes()),
-        };
-    }
-    writer.write_all(b"</tokens>");
+trait Xml {
+    fn xml(&self) -> String;
+}
+
+fn save<T>(destination: PathBuf, tokens: T) where T: Xml {
+    let mut writer = BufWriter::new(
+        File::create(destination).expect("failed to create a file")
+    );
+    writer.write_all(tokens.xml().as_bytes());
 }
 
 fn convert_to_xml_symbol(symbol: &str) -> String {

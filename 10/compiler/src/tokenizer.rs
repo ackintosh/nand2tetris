@@ -1,5 +1,6 @@
 use std::io::{BufReader, BufRead};
 use std::fs::File;
+use crate::{Xml, convert_to_xml_symbol};
 
 const KEYWORD: [&str; 21] = [
     "class",
@@ -188,6 +189,30 @@ impl From<&Token> for Token {
             Token::IntegerConst(s) => Token::IntegerConst(String::from(s)),
             Token::StringConst(s) => Token::StringConst(String::from(s)),
         }
+    }
+}
+
+impl Xml for Token {
+    fn xml(&self) -> String {
+        match self {
+            Token::Keyword(keyword) => format!("<keyword>{}</keyword>\n", keyword),
+            Token::Symbol(symbol) => format!("<symbol>{}</symbol>\n", convert_to_xml_symbol(&symbol)),
+            Token::Identifier(identifier) => format!("<identifier>{}</identifier>\n", identifier),
+            Token::IntegerConst(integer_const) => format!("<integerConstant>{}</integerConstant>\n", integer_const),
+            Token::StringConst(string_const) => format!("<stringConstant>{}</stringConstant>\n", string_const),
+        }
+    }
+}
+
+impl<T> Xml for &Vec<T> where T: Xml {
+    fn xml(&self) -> String {
+        let mut xml = String::new();
+        xml.push_str("<tokens>\n");
+        for t in self.iter() {
+            xml.push_str(t.xml().as_str());
+        }
+        xml.push_str("</tokens>\n");
+        xml
     }
 }
 
