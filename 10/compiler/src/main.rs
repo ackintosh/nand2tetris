@@ -34,9 +34,12 @@ impl Analyzer {
             let f = std::fs::File::open(jack_file.clone()).expect(format!("failed to open .jack file: {:?}", jack_file).as_str());
             let mut tokenizer = Tokenizer::new(f);
             let tokens = tokenizer.generate_tokens();
-            let destination = Self::source_to_destination(&jack_file);
+
+            let (destination, destination_token) = Self::source_to_destination(&jack_file);
             println!("destination: {:?}", destination);
-            save(destination, &tokens);
+            println!("destination_token: {:?}", destination_token);
+
+            save(destination_token, &tokens);
 
             let _class = CompilationEngine::compile(tokens);
         }
@@ -63,10 +66,21 @@ impl Analyzer {
         }
     }
 
-    fn source_to_destination(path: &PathBuf) -> PathBuf {
+    fn source_to_destination(path: &PathBuf) -> (PathBuf, PathBuf) {
         let mut  dest = path.clone();
         dest.set_extension("xml");
-        dest
+
+        let mut dest_token = dest.clone();
+        dest_token = {
+            let file_stem = {
+                let file_stem = dest_token.file_stem().unwrap();
+                file_stem.to_os_string()
+            };
+            dest_token.pop();
+            dest_token.join(Path::new(format!("{}T.xml", file_stem.to_str().unwrap()).as_str()))
+        };
+
+        (dest, dest_token)
     }
 }
 
